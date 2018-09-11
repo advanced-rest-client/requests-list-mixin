@@ -1,0 +1,29 @@
+{
+  "name": "@api-components/requests-list-mixin",
+  "description": "A common function for element that handles lists of requests like history, saved or menu items",
+  "version": "2.0.0-preview",
+  "license": "Apache-2.0",
+  "main": "requests-list-mixin.html",
+  "authors": [
+    "Pawel Psztyc",
+    "The Advanced REST client authors <arc@mulesoft.com>"
+  ],
+  "devDependencies": {
+    "@polymer/gen-typescript-declarations": "^1.1.1"
+  },
+  "private": false,
+  "scripts": {
+    "lint": "polymer lint requests-list-mixin.html",
+    "test-sauce": "polymer test --plugin sauce --job-name \"requests-list-mixin:local-test\"",
+    "test": "polymer test --plugin local",
+    "update-types": "gen-typescript-declarations --deleteExisting --outDir ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/advanced-rest-client/requests-list-mixin.git"
+  },
+  "bugs": {
+    "url": "https://github.com/advanced-rest-client/requests-list-mixin/issues",
+    "email": "arc@mulesoft.com"
+  }
+}

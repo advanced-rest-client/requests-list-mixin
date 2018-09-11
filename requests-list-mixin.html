@@ -1,0 +1,290 @@
+<!--
+@license
+Copyright 2018 The Advanced REST client authors <arc@mulesoft.com>
+Licensed under the Apache License, Version 2.0 (the "License"); you may not
+use this file except in compliance with the License. You may obtain a copy of
+the License at
+http://www.apache.org/licenses/LICENSE-2.0
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+License for the specific language governing permissions and limitations under
+the License.
+-->
+<link rel="import" href="../polymer/lib/utils/mixin.html">
+<script>
+(function(global) {
+'use strict';
+if (!global.ArcComponents) {
+  /**
+   * @namespace ArcComponents
+   */
+  global.ArcComponents = {};
+}
+/**
+ * A mixin to be used with elements that consumes lists of requests.
+ * It implements event listeners related to requests data change.
+ *
+ * @polymer
+ * @mixinFunction
+ * @memberof ArcComponents
+ */
+global.ArcComponents.RequestsListMixin = Polymer.dedupingMixin((base) => {
+  /**
+   * @polymer
+   * @mixinClass
+   */
+  class RLmixin extends base {
+    static get properties() {
+      return {
+        /**
+         * The list of request to render.
+         * It can be eirther saved, history or project items.
+         * @type {Array<Object>}
+         */
+        requests: Array,
+        /**
+         * Computed value, true when the project has requests.
+         */
+        hasRequests: {
+          type: Boolean,
+          value: false,
+          computed: '_computeHasRequests(requests.length)'
+        },
+        /**
+         * Requests list type. Can be one of:
+         * - saved
+         * - history
+         * - project
+         *
+         * Depending on the the type request change event is handled differently.
+         * For saved and history requests corresponding type is processed.
+         * For project requests list only request that has project id in the
+         * projects list is processed.
+         *
+         * This property must be set.
+         */
+        type: String,
+        /**
+         * Project datastore ID to display.
+         * This should be set only when type is `project`
+         */
+        projectId: String
+      };
+    }
+
+    constructor() {
+      super();
+      this._requestDeletedHandler = this._requestDeletedHandler.bind(this);
+      this._requestChangedHandler = this._requestChangedHandler.bind(this);
+    }
+
+    connectedCallback() {
+      super.connectedCallback();
+      window.addEventListener('request-object-deleted', this._requestDeletedHandler);
+      window.addEventListener('request-object-changed', this._requestChangedHandler);
+    }
+
+    disconnectedCallback() {
+      super.disconnectedCallback();
+      window.removeEventListener('request-object-deleted', this._requestDeletedHandler);
+      window.removeEventListener('request-object-changed', this._requestChangedHandler);
+    }
+    /**
+     * Handler for `request-object-deleted` event. Removes request from the list
+     * if it existed.
+     * @param {CustomEvent} e
+     */
+    _requestDeletedHandler(e) {
+      const requests = this.requests;
+      if (e.cancelable || !requests || !requests.length) {
+        return;
+      }
+      const deleteId = e.detail.id;
+      for (let i = 0, len = requests.length; i < len; i++) {
+        if (requests[i]._id === deleteId) {
+          this.splice('requests', i, 1);
+          return;
+        }
+      }
+    }
+    /**
+     * Handler for `request-object-changed` custom event.
+     * Depending on the `type` property it updates / adds / removes item from
+     * the requests list.
+     * @param {CustomEvent} e
+     */
+    _requestChangedHandler(e) {
+      if (e.cancelable) {
+        return;
+      }
+      const request = e.detail.request;
+      switch (this.type) {
+        case 'history':
+        case 'saved':
+          this._canProcessHistory(request);
+          break;
+        case 'project':
+          this._canProcessProject(request);
+          break;
+      }
+    }
+    /**
+     * Handles request change when type is project.
+     * @param {Object} request Changed request object.
+     */
+    _projectTypeChanged(request) {
+      const projectId = this.projectId;
+      if (!projectId) {
+        return;
+      }
+      const requests = this.requests;
+      if (!requests) {
+        if (this._isProjectRequest(request)) {
+          this.requests = [request];
+        }
+        return;
+      }
+      for (let i = requests.length - 1; i >= 0; i--) {
+        if (requests[i]._id === request._id) {
+          if (this._isProjectRequest(request)) {
+            this.set(`requests.${i}`, request);
+          } else {
+            this.splice('requests', i, 1);
+          }
+          return;
+        }
+      }
+      if (this._isProjectRequest(request)) {
+        this.push(`requests`, request);
+      }
+    }
+    /**
+     * Handles request change when type is saved or history.
+     * @param {Object} request Changed request object.
+     */
+    _savedTypeChanged(request) {
+      const requests = this.requests;
+      for (let i = 0, len = requests.length; i < len; i++) {
+        if (requests[i]._id === request._id) {
+          this.set(`requests.${i}`, request);
+          return;
+        }
+      }
+    }
+    /**
+     * A function to read request data for a project.
+     * @param {String} projectId Project ID
+     * @return {Promise} Promise.resolved to requests list.
+     */
+    readProjectRequests(projectId) {
+      const e = new CustomEvent('project-read', {
+        bubbles: true,
+        cancelable: true,
+        composed: true,
+        detail: {
+          id: projectId
+        }
+      });
+      this.dispatchEvent(e);
+      if (!e.defaultPrevented) {
+        return Promise.reject(new Error(`project-read event not handled`));
+      }
+      let projectHasRequests;
+      e.detail.result
+      .then((project) => {
+        projectHasRequests = !!project.requests;
+        const e = new CustomEvent('request-project-list', {
+          bubbles: true,
+          cancelable: true,
+          composed: true,
+          detail: {
+            id: project._id
+          }
+        });
+        this.dispatchEvent(e);
+        if (!e.defaultPrevented) {
+          return Promise.reject(new Error('request-project-list event not handled'));
+        }
+        return e.detail.result;
+      })
+      .then((requests) => {
+        if (!projectHasRequests) {
+          requests.sort(this._legacySort);
+        }
+        return requests;
+      });
+    }
+
+    /**
+     * Sorts requests list by `projectOrder` property
+     *
+     * @param {Object} a
+     * @param {Object} b
+     * @return {Number}
+     */
+    _legacySort(a, b) {
+      if (a.projectOrder > b.projectOrder) {
+        return 1;
+      }
+      if (a.projectOrder < b.projectOrder) {
+        return -1;
+      }
+      if (a.name > b.name) {
+        return 1;
+      }
+      if (a.name < b.name) {
+        return -1;
+      }
+      return 0;
+    }
+
+    /**
+     * Updates requests in bulk opeartion.
+     * @param {[type]} items [description]
+     * @return {[type]} [description]
+     */
+    _updateBulk(items) {
+      const promises = items.map((item) => this._updateRequest(item));
+      return Promise.all(promises);
+    }
+    /**
+     * Sends the `request-object-changed` custom event for each request on the list.
+     * @param {Object} request Request object.
+     * @return {Promise} Promise resolved when the request object is updated.
+     */
+    _updateRequest(request) {
+      let type;
+      switch (this.type) {
+        case 'saved':
+        case 'project':
+          type = 'saved';
+          break;
+        case 'history':
+          type = 'history';
+          break;
+      }
+      if (!type) {
+        return Promise.reject('Unknown request type');
+      }
+      const e = new CustomEvent('request-object-changed', {
+        bubbles: true,
+        cancelable: true,
+        composed: true,
+        detail: {
+          type,
+          request
+        }
+      });
+      this.dispatchEvent(e);
+      if (!e.defaultPrevented) {
+        return Promise.reject(new Error('Request model not found'));
+      }
+      return e.detail.result;
+    }
+  }
+  return RLmixin;
+});
+})(window);
+</script>
+</dom-module>
