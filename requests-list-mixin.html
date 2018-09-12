@@ -49,7 +49,8 @@ global.ArcComponents.RequestsListMixin = Polymer.dedupingMixin((base) => {
         hasRequests: {
           type: Boolean,
           value: false,
-          computed: '_computeHasRequests(requests.length)'
+          computed: '_computeHasRequests(requests.length)',
+          notify: true
         },
         /**
          * Requests list type. Can be one of:
@@ -69,7 +70,26 @@ global.ArcComponents.RequestsListMixin = Polymer.dedupingMixin((base) => {
          * Project datastore ID to display.
          * This should be set only when type is `project`
          */
-        projectId: String
+        projectId: String,
+        /**
+         * Changes information density of list items.
+         * By default it uses material's peper item with two lines (72px heigth)
+         * Possible values are:
+         *
+         * - `default` or empty - regular list view
+         * - `comfortable` - enables MD single line list item vie (52px heigth)
+         * - `compact` - enables list that has 40px heigth (touch recommended)
+         */
+        listType: {
+          type: String,
+          reflectToAttribute: true,
+          observer: '_updateListStyles'
+        },
+        /**
+         * Computed value if the list item should be consisted of two lines of
+         * description.
+         */
+        _hasTwoLines: {value: true, type: Boolean, computed: '_computeHasTwoLines(listType)'}
       };
     }
 
@@ -121,11 +141,13 @@ global.ArcComponents.RequestsListMixin = Polymer.dedupingMixin((base) => {
       const request = e.detail.request;
       switch (this.type) {
         case 'history':
+          this._historyTypeChanged(request);
+          break;
         case 'saved':
-          this._canProcessHistory(request);
+          this._savedTypeChanged(request);
           break;
         case 'project':
-          this._canProcessProject(request);
+          this._projectTypeChanged(request);
           break;
       }
     }
@@ -164,13 +186,90 @@ global.ArcComponents.RequestsListMixin = Polymer.dedupingMixin((base) => {
      * @param {Object} request Changed request object.
      */
     _savedTypeChanged(request) {
+      const t = this.type;
+      if (!t) {
+        return;
+      }
+      if (request.type === 'saved') {
+        if (t !== 'saved' && t !== 'saved-requests') {
+          return;
+        }
+      } else if (request.type === 'history') {
+        if (t !== 'history' && t !== 'history-requests') {
+          return;
+        }
+      }
       const requests = this.requests;
+      if (!requests) {
+        this.set('requests', [request]);
+        return;
+      }
       for (let i = 0, len = requests.length; i < len; i++) {
         if (requests[i]._id === request._id) {
           this.set(`requests.${i}`, request);
           return;
         }
       }
+      this.unshift('requests', request);
+    }
+    /**
+     * Handles request change when type is saved or history.
+     * @param {Object} request Changed request object.
+     */
+    _historyTypeChanged(request) {
+      const t = request.type;
+      if (t && t !== 'history' && t !== 'history-requests') {
+        return;
+      }
+      const requests = this.requests;
+      if (!requests) {
+        return this._unshiftHistoryItem(request);
+      }
+      const id = request._id;
+      for (let i = 0, len = requests.length; i < len; i++) {
+        if (requests[i]._id === id) {
+          const old = this.requests[i];
+          const next = this.requests[i + 1];
+          if (old.hasHeader && next && !next.hasHeader) {
+            this.set(['requests', i + 1, 'header'], old.header);
+            this.set(['requests', i + 1, 'hasHeader'], old.hasHeader);
+          }
+          if (i === 0) {
+            this._appendTodaysHeader(request);
+          }
+          this.set(['requests', i], request);
+          return;
+        }
+      }
+      this._unshiftHistoryItem(request);
+    }
+
+    /**
+     * Appends "today" header to the item.
+     *
+     * @param {Object} item History document
+     */
+    _appendTodaysHeader(item) {
+      item.hasHeader = true;
+      item.header = 'Today';
+      item.today = true;
+    }
+    /**
+     * Adds a new history item to the top of the list.
+     * @param {Object} item A history item to add
+     */
+    _unshiftHistoryItem(item) {
+      this._appendTodaysHeader(item);
+      const firstItem = this.get(['requests', 0]);
+      if (firstItem === undefined) {
+        return this.set('requests', [item]);
+      }
+      if (firstItem && firstItem.today) {
+        delete firstItem.hasHeader;
+        delete firstItem.header;
+        this.set(['requests', 0], firstItem);
+      }
+      this.unshift('requests', item);
     }
     /**
      * A function to read request data for a project.
@@ -281,6 +380,173 @@ global.ArcComponents.RequestsListMixin = Polymer.dedupingMixin((base) => {
         return Promise.reject(new Error('Request model not found'));
       }
       return e.detail.result;
+    }
+
+    _computeHasRequests(length) {
+      return !!length;
+    }
+    /**
+     * Computes value for `_hasTwoLines` property.
+     * @param {?String} listType Selected list type.
+     * @return {Boolean}
+     */
+    _computeHasTwoLines(listType) {
+      if (!listType || listType === 'default') {
+        return true;
+      }
+      return false;
+    }
+    /**
+     * Updates icon size CSS variable and notifies resize on the list when
+     * list type changes.
+     * @param {?String} type
+     */
+    _updateListStyles(type) {
+      let size;
+      switch (type) {
+        case 'comfortable': size = 48; break;
+        case 'compact': size = 36; break;
+        default: size = 72; break;
+      }
+      this.updateStyles({
+        '--paper-item-icon-width': `${size}px`
+      });
+      if (this.notifyResize) {
+        this.notifyResize();
+      }
+    }
+    /**
+     * Creates a headers for each day and group requests in each day group.
+     * This is relevant for history type
+     *
+     * @param {Array<Object>} requests
+     * @param {Number} today Timestamp of today
+     * @param {Number} yesterday Timestamp of yesterday
+     */
+    _groupHistory(requests, today, yesterday) {
+      const days = [];
+      const result = [];
+      requests.forEach((item) => {
+        const info = this._computeHistoryTime(item.updated || item.created);
+        if (!info) {
+          return;
+        }
+        item.timeLabel = info.timeLabel;
+        let date = info.formatted;
+        if (days.indexOf(date) === -1) {
+          days[days.length] = date;
+          let time = info.time;
+          if (time === today) {
+            item.today = true;
+            date = 'Today';
+          } else if (time === yesterday) {
+            date = 'Yesterday';
+          }
+          item.hasHeader = true;
+          item.header = date;
+        }
+        result.push(item);
+      });
+      return result;
+    }
+    /**
+     * Computes time information for a history item. This is later used to
+     * present history list item.
+     * @param {Number} date Timestamp of when the item was created / updated
+     * @return {Object} Various time formats:
+     * - formatted - Formatted date string
+     * - time - Parsed timestamp
+     * - timeLabel - secondary list item
+     */
+    _computeHistoryTime(date) {
+      if (!date) {
+        return;
+      }
+      const d = new Date(date);
+      if (isNaN(d)) {
+        return;
+      }
+      const formatted = new Intl.DateTimeFormat(undefined, {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      }).format(d);
+      const timeLabel = new Intl.DateTimeFormat(undefined, {
+        hour: 'numeric',
+        minute: 'numeric',
+        second: 'numeric'
+      }).format(d);
+      d.setHours(0, 0, 0, 0);
+      const time = d.getTime();
+      return {
+        formatted,
+        time,
+        timeLabel
+      };
+    }
+    /**
+     * Creates a timestamp fot today, midnight
+     * @return {Number}
+     */
+    _getTodayTimestamp() {
+      const now = new Date();
+      now.setHours(0, 0, 0, 0);
+      return now.getTime();
+    }
+    /**
+     * Computes yesterday's midninght based on today's mignight timestamp
+     * @param {Number} todayTimestamp Timestamp of current daty at midnight
+     * @return {Number} Timestamp 24 hours earlier.
+     */
+    _getYesterdayTimestamp(todayTimestamp) {
+      return todayTimestamp - 86400000; // 24 h in milliseconds
+    }
+    /**
+     * Processes query results to generate view data model.
+     * @param {Array} res List of history requests retreived from the datastore.
+     * @return {Array} Processed data requests.
+     */
+    _processHistoryResults(res) {
+      res = this._ensureTimestamps(res);
+      res.sort(this._sortHistoryResults);
+      const today = this._getTodayTimestamp();
+      const yesterday = this._getYesterdayTimestamp(today);
+      res = this._groupHistory(res, today, yesterday);
+      return res;
+    }
+    /**
+     * Ensures that the history objects have the `updated` property
+     * required by further computations while processing results.
+     *
+     * @param {Array<Object>} requests List of history requests
+     * @return {Array<Object>} The same array but all requests will have `updated`
+     * property.
+     */
+    _ensureTimestamps(requests) {
+      return requests.map((item) => {
+        if (!item.created) {
+          item.created = Date.now();
+        }
+        if (!item.updated || isNaN(item.updated)) {
+          if (item.created && !isNaN(item.created)) {
+            item.updated = item.created;
+          } else {
+            item.updated = Date.now();
+          }
+        }
+        return item;
+      });
+    }
+    // Sorts the query results by `updated` property.
+    _sortHistoryResults(a, b) {
+      if (a.updated > b.updated) {
+        return -1;
+      }
+      if (a.updated < b.updated) {
+        return 1;
+      }
+      return 0;
     }
   }
   return RLmixin;
