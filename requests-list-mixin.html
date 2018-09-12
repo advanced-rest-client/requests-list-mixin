@@ -89,7 +89,13 @@ global.ArcComponents.RequestsListMixin = Polymer.dedupingMixin((base) => {
          * Computed value if the list item should be consisted of two lines of
          * description.
          */
-        _hasTwoLines: {value: true, type: Boolean, computed: '_computeHasTwoLines(listType)'}
+        _hasTwoLines: {value: true, type: Boolean, computed: '_computeHasTwoLines(listType)'},
+        /**
+         * A project object associated with requests.
+         * This is only valid when `type` is project. It is set automatically
+         * when `readProjectRequests()` is called.
+         */
+        project: Object
       };
     }
 
@@ -97,18 +103,21 @@ global.ArcComponents.RequestsListMixin = Polymer.dedupingMixin((base) => {
       super();
       this._requestDeletedHandler = this._requestDeletedHandler.bind(this);
       this._requestChangedHandler = this._requestChangedHandler.bind(this);
+      this._projectChanged = this._projectChanged.bind(this);
     }
 
     connectedCallback() {
       super.connectedCallback();
       window.addEventListener('request-object-deleted', this._requestDeletedHandler);
       window.addEventListener('request-object-changed', this._requestChangedHandler);
+      window.addEventListener('project-object-changed', this._projectChanged);
     }
 
     disconnectedCallback() {
       super.disconnectedCallback();
       window.removeEventListener('request-object-deleted', this._requestDeletedHandler);
       window.removeEventListener('request-object-changed', this._requestChangedHandler);
+      window.removeEventListener('project-object-changed', this._projectChanged);
     }
     /**
      * Handler for `request-object-deleted` event. Removes request from the list
@@ -182,6 +191,24 @@ global.ArcComponents.RequestsListMixin = Polymer.dedupingMixin((base) => {
       }
     }
     /**
+     * Checks if requests is related to current project.
+     * `projectId` has to be set on the element.
+     * @param {Object} request
+     * @return {Boolean}
+     */
+    _isProjectRequest(request) {
+      const projectId = this.projectId;
+      if (!projectId) {
+        return false;
+      }
+      if (request.projects && request.projects.indexOf(projectId) !== -1) {
+        return true;
+      } else if (request.legacyProject === projectId) {
+        return true;
+      }
+      return false;
+    }
+    /**
      * Handles request change when type is saved or history.
      * @param {Object} request Changed request object.
      */
@@ -223,7 +250,8 @@ global.ArcComponents.RequestsListMixin = Polymer.dedupingMixin((base) => {
       }
       const requests = this.requests;
       if (!requests) {
-        return this._unshiftHistoryItem(request);
+        this._unshiftHistoryItem(request);
+        return;
       }
       const id = request._id;
       for (let i = 0, len = requests.length; i < len; i++) {
@@ -262,7 +290,8 @@ global.ArcComponents.RequestsListMixin = Polymer.dedupingMixin((base) => {
       this._appendTodaysHeader(item);
       const firstItem = this.get(['requests', 0]);
       if (firstItem === undefined) {
-        return this.set('requests', [item]);
+        this.set('requests', [item]);
+        return;
       }
       if (firstItem && firstItem.today) {
         delete firstItem.hasHeader;
@@ -277,21 +306,33 @@ global.ArcComponents.RequestsListMixin = Polymer.dedupingMixin((base) => {
      * @return {Promise} Promise.resolved to requests list.
      */
     readProjectRequests(projectId) {
-      const e = new CustomEvent('project-read', {
-        bubbles: true,
-        cancelable: true,
-        composed: true,
-        detail: {
-          id: projectId
+      let p;
+      const currentProject = this.project;
+      const hasCurrentProject = !!currentProject;
+      if (hasCurrentProject && currentProject._id === projectId) {
+        p = Promise.resolve(currentProject);
+      } else {
+        const e = new CustomEvent('project-read', {
+          bubbles: true,
+          cancelable: true,
+          composed: true,
+          detail: {
+            id: projectId
+          }
+        });
+        this.dispatchEvent(e);
+        if (!e.defaultPrevented) {
+          p = Promise.reject(new Error(`project-read event not handled`));
+        } else {
+          p = e.detail.result;
         }
-      });
-      this.dispatchEvent(e);
-      if (!e.defaultPrevented) {
-        return Promise.reject(new Error(`project-read event not handled`));
       }
+
       let projectHasRequests;
-      e.detail.result
-      .then((project) => {
+      return p.then((project) => {
+        if (!hasCurrentProject) {
+          this.project = project;
+        }
         projectHasRequests = !!project.requests;
         const e = new CustomEvent('request-project-list', {
           bubbles: true,
@@ -422,6 +463,7 @@ global.ArcComponents.RequestsListMixin = Polymer.dedupingMixin((base) => {
      * @param {Array<Object>} requests
      * @param {Number} today Timestamp of today
      * @param {Number} yesterday Timestamp of yesterday
+     * @return {Array<Object>}
      */
     _groupHistory(requests, today, yesterday) {
       const days = [];
@@ -547,6 +589,63 @@ global.ArcComponents.RequestsListMixin = Polymer.dedupingMixin((base) => {
         return 1;
       }
       return 0;
+    }
+    /**
+     * Stores current order of requests in the project.
+     * This shouls be only called wshen `project` property is set.
+     * @return {Promise}
+     */
+    _persistRequestsOrder() {
+      if (!this.project) {
+        return Promise.reject(new Error('"project" is not set'));
+      }
+      const items = this.requests;
+      const newOrder = items.map((item) => item._id);
+      const project = Object.assign({}, this.project);
+      if (project.requests === newOrder) {
+        return;
+      }
+      project.requests = newOrder;
+      delete project.opened;
+      return this._dispatchProjectUpdate(project);
+    }
+    /**
+     * Dispatches `project-object-changed` event to inform model to update
+     * the data.
+     *
+     * @param {Object} project Data to store.
+     * @return {Promise}
+     */
+    _dispatchProjectUpdate(project) {
+      const e = new CustomEvent('project-object-changed', {
+        bubbles: true,
+        cancelable: true,
+        composed: true,
+        detail: {
+          project
+        }
+      });
+      this.dispatchEvent(e);
+      if (!e.defaultPrevented) {
+        return new Promise.reject(new Error('projects model not handled'));
+      }
+      return e.detail.result;
+    }
+
+    /**
+     * Handler for the `project-object-changed` event.
+     * @param {CustomEvent} e
+     */
+    _projectChanged(e) {
+      if (e.cancelable || this.type !== 'project' || !this.project ||
+        e.composedPath()[0] === this) {
+        return;
+      }
+      const project = e.detail.project;
+      if (this.project._id !== project._id) {
+        return;
+      }
+      this.project = project;
     }
   }
   return RLmixin;
