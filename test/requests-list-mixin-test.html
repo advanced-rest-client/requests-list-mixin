@@ -6,24 +6,410 @@
   <title>requests-list-mixin test</title>
   <script src="../../webcomponentsjs/webcomponents-loader.js"></script>
   <script src="../../web-component-tester/browser.js"></script>
-  <link rel="import" href="../requests-list-mixin.html">
+  <link rel="import" href="../../arc-data-generator/arc-data-generator.html">
+  <script src="../../chance/dist/chance.min.js"></script>
+  <link rel="import" href="test-element.html">
 </head>
 <body>
   <test-fixture id="Basic">
     <template>
-      <requests-list-mixin></requests-list-mixin>
+      <test-element></test-element>
+    </template>
+  </test-fixture>
+
+  <test-fixture id="Comfortable">
+    <template>
+      <test-element list-type="comfortable"></test-element>
+    </template>
+  </test-fixture>
+
+  <test-fixture id="Compact">
+    <template>
+      <test-element list-type="compact"></test-element>
+    </template>
+  </test-fixture>
+
+  <test-fixture id="Default">
+    <template>
+      <test-element list-type="default"></test-element>
+    </template>
+  </test-fixture>
+
+  <test-fixture id="History">
+    <template>
+      <test-element type="history"></test-element>
     </template>
   </test-fixture>
 
   <script>
+  /* global DataGenerator */
   suite('requests-list-mixin', () => {
-    let element;
-    setup(() => {
-      element = fixture('Basic');
+    suite('hasRequests property', () => {
+      let element;
+      setup(() => {
+        element = fixture('Basic');
+      });
+
+      test('Has default value', () => {
+        assert.isFalse(element.hasRequests);
+      });
+
+      test('Is true when has requests', () => {
+        element.requests = [{
+          _id: 'test'
+        }];
+        assert.isTrue(element.hasRequests);
+      });
+
+      test('Is false when requests are cleared', () => {
+        element.requests = [{
+          _id: 'test'
+        }];
+        flush(() => {
+          element.requests = undefined;
+          assert.isFalse(element.hasRequests);
+        });
+      });
     });
 
-    test('Initializes the element', () => {
-      assert.ok(element);
+    const iconWidthProperty = '--paper-item-icon-width';
+    const iconWidths = ['72px', '48px', '36px'];
+
+    suite('Default list type', (done) => {
+      test(`Icon width is ${iconWidths[0]} for default list style`, (done) => {
+        let style;
+        const element = fixture('Default');
+        flush(() => {
+          if (window.ShadyCSS) {
+            style = window.ShadyCSS.getComputedStyleValue(element, iconWidthProperty);
+          } else {
+            style = getComputedStyle(element).getPropertyValue(iconWidthProperty);
+          }
+          assert.equal(style.trim(), iconWidths[0]);
+          done();
+        });
+      });
+
+      test(`Icon width is ${iconWidths[0]} for inital list style`, () => {
+        const element = fixture('Basic');
+        flush(() => {
+          let style;
+          if (window.ShadyCSS) {
+            style = window.ShadyCSS.getComputedStyleValue(element, iconWidthProperty);
+          } else {
+            style = getComputedStyle(element).getPropertyValue(iconWidthProperty);
+          }
+          assert.equal(style.trim(), iconWidths[0]);
+          done();
+        });
+      });
+
+      test('_hasTwoLines is computed for initial list type', () => {
+        const element = fixture('Basic');
+        assert.isTrue(element._hasTwoLines);
+      });
+
+      test('_hasTwoLines is computed for "default" list type', () => {
+        const element = fixture('Default');
+        assert.isTrue(element._hasTwoLines);
+      });
+    });
+
+    suite('Comfortable list type', (done) => {
+      test('Icon width is ' + iconWidths[1], () => {
+        let style;
+        const element = fixture('Comfortable');
+        flush(() => {
+          if (window.ShadyCSS) {
+            style = window.ShadyCSS.getComputedStyleValue(element, iconWidthProperty);
+          } else {
+            style = getComputedStyle(element).getPropertyValue(iconWidthProperty);
+          }
+          assert.equal(style, iconWidths[1]);
+          done();
+        });
+      });
+
+      test('_hasTwoLines is computed', () => {
+        const element = fixture('Comfortable');
+        assert.isFalse(element._hasTwoLines);
+      });
+    });
+
+    suite('Compact list type', (done) => {
+      test('Icon width is ' + iconWidths[2], () => {
+        let style;
+        const element = fixture('Compact');
+        flush(() => {
+          if (window.ShadyCSS) {
+            style = window.ShadyCSS.getComputedStyleValue(element, iconWidthProperty);
+          } else {
+            style = getComputedStyle(element).getPropertyValue(iconWidthProperty);
+          }
+          assert.equal(style, iconWidths[2]);
+          done();
+        });
+      });
+
+      test('_hasTwoLines is computed', () => {
+        const element = fixture('Compact');
+        assert.isFalse(element._hasTwoLines);
+      });
+    });
+
+    suite('_requestDeletedHandler()', () => {
+      let requests;
+      let element;
+      setup(() => {
+        requests = DataGenerator.generateRequests({
+          requestsSize: 10
+        });
+        element = fixture('Basic');
+        element.requests = requests;
+      });
+
+      test('Ignores cancelable events', () => {
+        element._requestDeletedHandler({
+          cancelable: true,
+          detail: {
+            id: requests[0]._id
+          }
+        });
+        assert.lengthOf(element.requests, 10);
+      });
+
+      test('Removes request from the list', () => {
+        element._requestDeletedHandler({
+          cancelable: false,
+          detail: {
+            id: requests[4]._id
+          }
+        });
+        assert.lengthOf(element.requests, 9);
+      });
+
+      test('Does nothing for unknown item', () => {
+        element._requestDeletedHandler({
+          cancelable: false,
+          detail: {
+            id: 'something'
+          }
+        });
+        assert.lengthOf(element.requests, 10);
+      });
+    });
+
+    suite('_computeHistoryTime()', () => {
+      let element;
+      setup(() => {
+        element = fixture('Basic');
+      });
+
+      test('Returns undefined for invalid argument', () => {
+        const result = element._computeHistoryTime('invalid');
+        assert.isUndefined(result);
+      });
+
+      test('Returns an object', () => {
+        const result = element._computeHistoryTime(Date.now());
+        assert.typeOf(result, 'object');
+      });
+
+      test('Has "formatted" property', () => {
+        const result = element._computeHistoryTime(Date.now());
+        assert.typeOf(result.formatted, 'string');
+      });
+
+      test('Has "time" property', () => {
+        const result = element._computeHistoryTime(Date.now());
+        assert.typeOf(result.time, 'number');
+      });
+
+      test('Has "timeLabel" property', () => {
+        const result = element._computeHistoryTime(Date.now());
+        assert.typeOf(result.timeLabel, 'string');
+      });
+    });
+
+    suite('_getTodayTimestamp()', function() {
+      let element;
+      setup(() => {
+        element = fixture('Basic');
+      });
+
+      test('Returns a number', () => {
+        const result = element._getTodayTimestamp();
+        assert.typeOf(result, 'number');
+      });
+
+      test('Hours is set to 0', () => {
+        const result = element._getTodayTimestamp();
+        const date = new Date(result);
+        assert.equal(date.getHours(), 0);
+      });
+
+      test('Minutes is set to 0', () => {
+        const result = element._getTodayTimestamp();
+        const date = new Date(result);
+        assert.equal(date.getMinutes(), 0);
+      });
+
+      test('Seconds is set to 0', () => {
+        const result = element._getTodayTimestamp();
+        const date = new Date(result);
+        assert.equal(date.getSeconds(), 0);
+      });
+
+      test('Milliseconds is set to 0', () => {
+        const result = element._getTodayTimestamp();
+        const date = new Date(result);
+        assert.equal(date.getMilliseconds(), 0);
+      });
+    });
+
+    suite('_ensureTimestamps()', () => {
+      let element;
+      setup(() => {
+        element = fixture('Basic');
+      });
+
+      test('Adds created timestamp', function() {
+        const result = element._ensureTimestamps([{}]);
+        assert.typeOf(result[0].created, 'number');
+      });
+
+      test('Adds updated timestamp', function() {
+        const result = element._ensureTimestamps([{}]);
+        assert.typeOf(result[0].updated, 'number');
+      });
+
+      test('Sets updated to created if available', function() {
+        const created = 123456789;
+        const result = element._ensureTimestamps([{
+          created
+        }]);
+        assert.equal(result[0].created, created);
+      });
+
+      test('Returns the same values if present', function() {
+        const created = 123456789;
+        const updated = 987654321;
+        const result = element._ensureTimestamps([{
+          created,
+          updated
+        }]);
+        assert.equal(result[0].created, created);
+        assert.equal(result[0].updated, updated);
+      });
+    });
+
+    const hrs24 = 86400000;
+    const hrs96 = 4 * hrs24;
+
+    suite('_processHistoryResults()', function() {
+      let element;
+      let items;
+      setup(() => {
+        element = fixture('History');
+        items = [{
+          _id: 'a',
+          created: (Date.now() - 2000)
+        }, {
+          _id: 'b',
+          created: Date.now()
+        }, {
+          _id: 'c',
+          created: (Date.now() - hrs24)
+        }, {
+          _id: 'd',
+          created: (Date.now() - hrs96)
+        }];
+      });
+
+      test('Sorts results by updated property', () => {
+        const result = element._processHistoryResults(items);
+        assert.equal(result[0]._id, 'b');
+        assert.equal(result[1]._id, 'a');
+      });
+
+      test('First item in group has a title with label', function() {
+        const result = element._processHistoryResults(items);
+        assert.isTrue(result[0].hasHeader, 'Today\'s item has header');
+        assert.isTrue(result[2].hasHeader, 'Yesterday\'s item has header');
+        assert.isTrue(result[3].hasHeader, 'Past item has header');
+        assert.equal(result[0].header, 'Today', 'header for today is set');
+        assert.equal(result[2].header, 'Yesterday', 'header for yesterday is set');
+        const pastHeader = result[3].header;
+        assert.notEqual(pastHeader, 'Today', 'Past header is not Today');
+        assert.notEqual(pastHeader, 'Yesterday', 'Past header is not Yesterday');
+        assert.typeOf(pastHeader, 'string', 'Past header is set');
+      });
+
+      test('n-th item has no header', function() {
+        const result = element._processHistoryResults(items);
+        assert.notOk(result[1].hasHeader);
+      });
+    });
+
+    function requestUpdated(item) {
+      const e = new CustomEvent('request-object-changed', {
+        detail: {
+          request: item,
+          type: 'history'
+        },
+        bubbles: true
+      });
+      document.body.dispatchEvent(e);
+    }
+
+    suite('History list update', function() {
+      let element;
+      let topItem;
+      setup(() => {
+        element = fixture('History');
+        let items = [{
+          _id: 'a',
+          created: (Date.now() - 2400)
+        }, {
+          _id: 'b',
+          created: (Date.now() - 1000)
+        }, {
+          _id: 'c',
+          created: (Date.now() - hrs24)
+        }, {
+          _id: 'd',
+          created: (Date.now() - hrs96)
+        }];
+        const result = element._processHistoryResults(items);
+        element.requests = result;
+        topItem = {
+          _id: 'top',
+          created: Date.now()
+        };
+      });
+
+      test('Add an item to the list', () => {
+        requestUpdated(topItem);
+        assert.lengthOf(element.requests, 5);
+      });
+
+      test('Item is added to the top of the list', () => {
+        requestUpdated(topItem);
+        const top = element.requests[0];
+        assert.equal(top._id, 'top');
+      });
+
+      test('New item has header', () => {
+        requestUpdated(topItem);
+        const top = element.requests[0];
+        assert.isTrue(top.hasHeader);
+      });
+
+      test('New item has header value is today', () => {
+        requestUpdated(topItem);
+        const top = element.requests[0];
+        assert.equal(top.header, 'Today');
+      });
     });
   });
   </script>

@@ -1,0 +1,23 @@
+<link rel="import" href="../../polymer/polymer-element.html">
+<link rel="import" href="../requests-list-mixin.html">
+<link rel="import" href="../requests-list-styles.html">
+
+<dom-module id="test-element">
+  <template>
+    <style include="requests-list-styles"></style>
+  </template>
+  <script>
+  /**
+   * @customElement
+   * @polymer
+   * @demo demo/index.html
+   * @appliesMixin ArcComponents.RequestsListMixin
+   */
+  class TestElement extends ArcComponents.RequestsListMixin(Polymer.Element) {
+    static get is() {
+      return 'test-element';
+    }
+  }
+  window.customElements.define(TestElement.is, TestElement);
+  </script>
+</dom-module>
