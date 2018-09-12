@@ -1,0 +1,90 @@
+<link rel="import" href="../polymer/polymer-element.html">
+
+<!--
+Common styles for requests lists
+-->
+<dom-module id="requests-list-styles">
+  <template>
+    <style>
+    :host {
+      --paper-item-icon-width: 72px;
+    }
+
+    paper-icon-item {
+      @apply --arc-font-menu;
+      font-weight: 400;
+      cursor: pointer;
+      @apply --request-list-item;
+    }
+
+    http-method-label {
+      font-size: 14px;
+      height: 52px;
+      width: 52px;
+      text-align: center;
+      padding-top: 14px;
+      box-sizing: border-box;
+      border-radius: 50%;
+      text-overflow: ellipsis;
+      overflow: hidden;
+    }
+
+    paper--icon-item:focus http-method-label[method="post"] {
+      color: var(--request-list-item-selected-post-method-color, #fff);
+    }
+
+    .iron-selected paper-icon-item:focus http-method-label[method="post"] {
+      color: var(--request-list-item-focused-post-method-color, rgb(33, 150, 243));
+    }
+
+    :host([list-type="comfortable"]) paper-item-body,
+    :host([list-type="compact"]) paper-item-body {
+      @apply --layout-horizontal;
+      @apply --layout-center;
+      @apply --layout-start-justified;
+    }
+
+    :host([list-type="comfortable"]) [secondary],
+    :host([list-type="compact"]) [secondary] {
+      margin-left: 8px;
+    }
+
+    :host([list-type="comfortable"]) http-method-label {
+      height: 40px;
+      width: 40px;
+      padding-top: 8px;
+      font-size: 13px;
+    }
+
+    :host([list-type="compact"]) http-method-label {
+      height: 28px;
+      width: 28px;
+      padding-top: 4px;
+      font-size: 11px;
+    }
+
+    :host([list-type="comfortable"]) paper-icon-item {
+      min-height: 52px;
+    }
+
+    :host([list-type="compact"]) paper-icon-item {
+      min-height: 36px;
+    }
+
+    .history-group-header {
+      font-weight: var(--request-list-history-group-header-font-weigth, bold);
+      color: var(--request-list-history-group-header-color, rgba(0, 0, 0, 0.67));
+      padding: 24px 16px;
+      @apply --request-list-history-group-header;
+    }
+
+    :host([list-type="comfortable"]) .history-group-header {
+      padding: 16px;
+    }
+
+    :host([list-type="compact"]) .history-group-header {
+      padding: 12px;
+    }
+    </style>
+  </template>
+</dom-module>
