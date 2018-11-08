@@ -130,8 +130,42 @@ global.ArcComponents.RequestsListMixin = Polymer.dedupingMixin((base) => {
         return;
       }
       const deleteId = e.detail.id;
+      switch (this.type) {
+        case 'history':
+          this._historyItemDeleted(deleteId);
+          break;
+        default:
+          this._itemDeleted(deleteId);
+          break;
+      }
+    }
+    /**
+     * Removes an item from the list by given id.
+     * @param {String} id Request ID to remove
+     */
+    _itemDeleted(id) {
+      const requests = this.requests;
       for (let i = 0, len = requests.length; i < len; i++) {
-        if (requests[i]._id === deleteId) {
+        if (requests[i]._id === id) {
+          this.splice('requests', i, 1);
+          return;
+        }
+      }
+    }
+    /**
+     * Removes a history item from the list by given id.
+     * @param {String} id Request ID to remove
+     */
+    _historyItemDeleted(id) {
+      const requests = this.requests;
+      for (let i = 0, len = requests.length; i < len; i++) {
+        if (requests[i]._id === id) {
+          const old = this.requests[i];
+          const next = this.requests[i + 1];
+          if (old.hasHeader && next && !next.hasHeader) {
+            this.set(['requests', i + 1, 'header'], old.header);
+            this.set(['requests', i + 1, 'hasHeader'], old.hasHeader);
+          }
           this.splice('requests', i, 1);
           return;
         }
