@@ -84,6 +84,15 @@ declare namespace ArcComponents {
     disconnectedCallback(): void;
 
     /**
+     * Dispatches bubbling and composed custom event.
+     * By default the event is cancelable until `cancelable` property is set to false.
+     *
+     * @param type Event type
+     * @param detail A detail to set
+     */
+    _dispatch(type: String|null, detail: any|null): CustomEvent|null;
+
+    /**
      * Handler for `request-object-deleted` event. Removes request from the list
      * if it existed.
      */
@@ -152,6 +161,31 @@ declare namespace ArcComponents {
     _unshiftHistoryItem(item: object|null): void;
 
     /**
+     * Dispatches `project-read` custom event and returns it.
+     *
+     * @param id Project ID to read
+     * @returns Disaptched custom event
+     */
+    _dispatchProjectRead(id: String|null): CustomEvent|null;
+
+    /**
+     * Dispatches `request-project-list` custom event and returns it.
+     *
+     * @param id Project ID
+     * @returns Disaptched custom event
+     */
+    _dispatchProjectList(id: String|null): CustomEvent|null;
+
+    /**
+     * Dispatches `request-object-changed` custom event and returns it.
+     *
+     * @param type Request type, `saved` or `history`.
+     * @param request Updated request to store.
+     * @returns Disaptched custom event
+     */
+    _dispatchRequestChanged(type: String|null, request: object|null): CustomEvent|null;
+
+    /**
      * A function to read request data for a project.
      *
      * @param projectId Project ID
@@ -199,6 +233,15 @@ declare namespace ArcComponents {
      * This shouls be only called wshen `project` property is set.
      */
     _persistRequestsOrder(): Promise<any>|null;
+
+    /**
+     * Tests if two arrays has the same order of ids (strings).
+     *
+     * @param a1 Array a
+     * @param a2 Array b
+     * @returns True when elements are ordered the same way.
+     */
+    _idsArrayEqual(a1: Array<String|null>|null, a2: Array<String|null>|null): Boolean|null;
 
     /**
      * Dispatches `project-object-changed` event to inform model to update

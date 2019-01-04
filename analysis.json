@@ -218,16 +218,47 @@
               }
             },
             {
+              "name": "_dispatch",
+              "description": "Dispatches bubbling and composed custom event.\nBy default the event is cancelable until `cancelable` property is set to false.",
+              "privacy": "protected",
+              "sourceRange": {
+                "start": {
+                  "line": 128,
+                  "column": 4
+                },
+                "end": {
+                  "line": 137,
+                  "column": 5
+                }
+              },
+              "metadata": {},
+              "params": [
+                {
+                  "name": "type",
+                  "type": "String",
+                  "description": "Event type"
+                },
+                {
+                  "name": "detail",
+                  "type": "?any",
+                  "description": "A detail to set"
+                }
+              ],
+              "return": {
+                "type": "CustomEvent"
+              }
+            },
+            {
               "name": "_requestDeletedHandler",
               "description": "Handler for `request-object-deleted` event. Removes request from the list\nif it existed.",
               "privacy": "protected",
               "sourceRange": {
                 "start": {
-                  "line": 126,
+                  "line": 144,
                   "column": 4
                 },
                 "end": {
-                  "line": 140,
+                  "line": 158,
                   "column": 5
                 }
               },
@@ -248,11 +279,11 @@
               "privacy": "protected",
               "sourceRange": {
                 "start": {
-                  "line": 145,
+                  "line": 163,
                   "column": 4
                 },
                 "end": {
-                  "line": 153,
+                  "line": 171,
                   "column": 5
                 }
               },
@@ -274,11 +305,11 @@
               "privacy": "protected",
               "sourceRange": {
                 "start": {
-                  "line": 158,
+                  "line": 176,
                   "column": 4
                 },
                 "end": {
-                  "line": 172,
+                  "line": 191,
                   "column": 5
                 }
               },
@@ -300,11 +331,11 @@
               "privacy": "protected",
               "sourceRange": {
                 "start": {
-                  "line": 179,
+                  "line": 198,
                   "column": 4
                 },
                 "end": {
-                  "line": 195,
+                  "line": 214,
                   "column": 5
                 }
               },
@@ -325,11 +356,11 @@
               "privacy": "protected",
               "sourceRange": {
                 "start": {
-                  "line": 200,
+                  "line": 219,
                   "column": 4
                 },
                 "end": {
-                  "line": 225,
+                  "line": 244,
                   "column": 5
                 }
               },
@@ -351,11 +382,11 @@
               "privacy": "protected",
               "sourceRange": {
                 "start": {
-                  "line": 232,
+                  "line": 251,
                   "column": 4
                 },
                 "end": {
-                  "line": 243,
+                  "line": 262,
                   "column": 5
                 }
               },
@@ -376,11 +407,11 @@
               "privacy": "protected",
               "sourceRange": {
                 "start": {
-                  "line": 248,
+                  "line": 267,
                   "column": 4
                 },
                 "end": {
-                  "line": 274,
+                  "line": 287,
                   "column": 5
                 }
               },
@@ -402,11 +433,11 @@
               "privacy": "protected",
               "sourceRange": {
                 "start": {
-                  "line": 279,
+                  "line": 292,
                   "column": 4
                 },
                 "end": {
-                  "line": 306,
+                  "line": 323,
                   "column": 5
                 }
               },
@@ -428,11 +459,11 @@
               "privacy": "protected",
               "sourceRange": {
                 "start": {
-                  "line": 313,
+                  "line": 330,
                   "column": 4
                 },
                 "end": {
-                  "line": 317,
+                  "line": 334,
                   "column": 5
                 }
               },
@@ -454,11 +485,11 @@
               "privacy": "protected",
               "sourceRange": {
                 "start": {
-                  "line": 322,
+                  "line": 339,
                   "column": 4
                 },
                 "end": {
-                  "line": 335,
+                  "line": 352,
                   "column": 5
                 }
               },
@@ -475,16 +506,102 @@
               }
             },
             {
+              "name": "_dispatchProjectRead",
+              "description": "Dispatches `project-read` custom event and returns it.",
+              "privacy": "protected",
+              "sourceRange": {
+                "start": {
+                  "line": 358,
+                  "column": 4
+                },
+                "end": {
+                  "line": 362,
+                  "column": 5
+                }
+              },
+              "metadata": {},
+              "params": [
+                {
+                  "name": "id",
+                  "type": "String",
+                  "description": "Project ID to read"
+                }
+              ],
+              "return": {
+                "type": "CustomEvent",
+                "desc": "Disaptched custom event"
+              }
+            },
+            {
+              "name": "_dispatchProjectList",
+              "description": "Dispatches `request-project-list` custom event and returns it.",
+              "privacy": "protected",
+              "sourceRange": {
+                "start": {
+                  "line": 368,
+                  "column": 4
+                },
+                "end": {
+                  "line": 372,
+                  "column": 5
+                }
+              },
+              "metadata": {},
+              "params": [
+                {
+                  "name": "id",
+                  "type": "String",
+                  "description": "Project ID"
+                }
+              ],
+              "return": {
+                "type": "CustomEvent",
+                "desc": "Disaptched custom event"
+              }
+            },
+            {
+              "name": "_dispatchRequestChanged",
+              "description": "Dispatches `request-object-changed` custom event and returns it.",
+              "privacy": "protected",
+              "sourceRange": {
+                "start": {
+                  "line": 380,
+                  "column": 4
+                },
+                "end": {
+                  "line": 385,
+                  "column": 5
+                }
+              },
+              "metadata": {},
+              "params": [
+                {
+                  "name": "type",
+                  "type": "String",
+                  "description": "Request type, `saved` or `history`."
+                },
+                {
+                  "name": "request",
+                  "type": "Object",
+                  "description": "Updated request to store."
+                }
+              ],
+              "return": {
+                "type": "CustomEvent",
+                "desc": "Disaptched custom event"
+              }
+            },
+            {
               "name": "readProjectRequests",
               "description": "A function to read request data for a project.",
               "privacy": "public",
               "sourceRange": {
                 "start": {
-                  "line": 341,
+                  "line": 392,
                   "column": 4
                 },
                 "end": {
-                  "line": 390,
+                  "line": 425,
                   "column": 5
                 }
               },
@@ -507,11 +624,11 @@
               "privacy": "protected",
               "sourceRange": {
                 "start": {
-                  "line": 399,
+                  "line": 434,
                   "column": 4
                 },
                 "end": {
-                  "line": 413,
+                  "line": 448,
                   "column": 5
                 }
               },
@@ -536,11 +653,11 @@
               "privacy": "protected",
               "sourceRange": {
                 "start": {
-                  "line": 420,
+                  "line": 455,
                   "column": 4
                 },
                 "end": {
-                  "line": 423,
+                  "line": 458,
                   "column": 5
                 }
               },
@@ -563,11 +680,11 @@
               "privacy": "protected",
               "sourceRange": {
                 "start": {
-                  "line": 429,
+                  "line": 464,
                   "column": 4
                 },
                 "end": {
-                  "line": 457,
+                  "line": 483,
                   "column": 5
                 }
               },
@@ -590,11 +707,11 @@
               "privacy": "protected",
               "sourceRange": {
                 "start": {
-                  "line": 459,
+                  "line": 485,
                   "column": 4
                 },
                 "end": {
-                  "line": 461,
+                  "line": 487,
                   "column": 5
                 }
               },
@@ -611,11 +728,11 @@
               "privacy": "protected",
               "sourceRange": {
                 "start": {
-                  "line": 467,
+                  "line": 493,
                   "column": 4
                 },
                 "end": {
-                  "line": 472,
+                  "line": 498,
                   "column": 5
                 }
               },
@@ -637,11 +754,11 @@
               "privacy": "protected",
               "sourceRange": {
                 "start": {
-                  "line": 478,
+                  "line": 504,
                   "column": 4
                 },
                 "end": {
-                  "line": 491,
+                  "line": 522,
                   "column": 5
                 }
               },
@@ -662,11 +779,11 @@
               "privacy": "protected",
               "sourceRange": {
                 "start": {
-                  "line": 497,
+                  "line": 528,
                   "column": 4
                 },
                 "end": {
-                  "line": 510,
+                  "line": 541,
                   "column": 5
                 }
               },
@@ -677,16 +794,48 @@
               }
             },
             {
+              "name": "_idsArrayEqual",
+              "description": "Tests if two arrays has the same order of ids (strings).",
+              "privacy": "protected",
+              "sourceRange": {
+                "start": {
+                  "line": 548,
+                  "column": 4
+                },
+                "end": {
+                  "line": 564,
+                  "column": 5
+                }
+              },
+              "metadata": {},
+              "params": [
+                {
+                  "name": "a1",
+                  "type": "Array.<String>",
+                  "description": "Array a"
+                },
+                {
+                  "name": "a2",
+                  "type": "Array.<String>",
+                  "description": "Array b"
+                }
+              ],
+              "return": {
+                "type": "Boolean",
+                "desc": "True when elements are ordered the same way."
+              }
+            },
+            {
               "name": "_dispatchProjectUpdate",
               "description": "Dispatches `project-object-changed` event to inform model to update\nthe data.",
               "privacy": "protected",
               "sourceRange": {
                 "start": {
-                  "line": 518,
+                  "line": 572,
                   "column": 4
                 },
                 "end": {
-                  "line": 532,
+                  "line": 580,
                   "column": 5
                 }
               },
@@ -708,11 +857,11 @@
               "privacy": "protected",
               "sourceRange": {
                 "start": {
-                  "line": 538,
+                  "line": 586,
                   "column": 4
                 },
                 "end": {
-                  "line": 548,
+                  "line": 596,
                   "column": 5
                 }
               },
@@ -737,7 +886,7 @@
               "column": 0
             },
             "end": {
-              "line": 551,
+              "line": 599,
               "column": 2
             }
           },
