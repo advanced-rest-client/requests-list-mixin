@@ -8,74 +8,1154 @@
   <script src="../../web-component-tester/browser.js"></script>
   <link rel="import" href="../../arc-data-generator/arc-data-generator.html">
   <script src="../../chance/dist/chance.min.js"></script>
-  <link rel="import" href="test-element.html">
+  <link rel="import" href="test-element-history.html">
+  <link rel="import" href="test-element-saved.html">
 </head>
 <body>
   <test-fixture id="Basic">
     <template>
-      <test-element></test-element>
+      <test-element-history></test-element-history>
+    </template>
+  </test-fixture>
+
+  <test-fixture id="BasicSaved">
+    <template>
+      <test-element-saved></test-element-saved>
     </template>
   </test-fixture>
 
   <test-fixture id="Comfortable">
     <template>
-      <test-element list-type="comfortable"></test-element>
+      <test-element-history list-type="comfortable"></test-element-history>
     </template>
   </test-fixture>
 
   <test-fixture id="Compact">
     <template>
-      <test-element list-type="compact"></test-element>
+      <test-element-history list-type="compact"></test-element-history>
     </template>
   </test-fixture>
 
   <test-fixture id="Default">
     <template>
-      <test-element list-type="default"></test-element>
+      <test-element-history list-type="default"></test-element-history>
     </template>
   </test-fixture>
 
   <test-fixture id="History">
     <template>
-      <test-element type="history"></test-element>
+      <test-element-history type="history"></test-element-history>
     </template>
   </test-fixture>
 
   <script>
   /* global DataGenerator */
-  suite('requests-list-mixin', () => {
-    suite('hasRequests property', () => {
-      let element;
-      setup(() => {
-        element = fixture('Basic');
-      });
+  suite('hasRequests property', () => {
+    let element;
+    setup(() => {
+      element = fixture('Basic');
+    });
 
-      test('Has default value', () => {
+    test('Has default value', () => {
+      assert.isFalse(element.hasRequests);
+    });
+
+    test('Is true when has requests', () => {
+      element.requests = [{
+        _id: 'test'
+      }];
+      assert.isTrue(element.hasRequests);
+    });
+
+    test('Is false when requests are cleared', () => {
+      element.requests = [{
+        _id: 'test'
+      }];
+      flush(() => {
+        element.requests = undefined;
         assert.isFalse(element.hasRequests);
       });
+    });
+  });
 
-      test('Is true when has requests', () => {
-        element.requests = [{
-          _id: 'test'
-        }];
-        assert.isTrue(element.hasRequests);
+  suite('_dispatch()', () => {
+    let element;
+    setup(() => {
+      element = fixture('Basic');
+    });
+    const eName = 'test-event';
+    const eDetail = 'test-detail';
+    test('Dispatches an event', () => {
+      const spy = sinon.spy();
+      element.addEventListener(eName, spy);
+      element._dispatch(eName);
+      assert.isTrue(spy.called);
+    });
+
+    test('Returns the event', () => {
+      const e = element._dispatch(eName);
+      assert.typeOf(e, 'customevent');
+    });
+
+    test('Event is cancelable', () => {
+      const e = element._dispatch(eName);
+      assert.isTrue(e.cancelable);
+    });
+
+    test('Event is composed', () => {
+      const e = element._dispatch(eName);
+      if (typeof e.composed !== 'undefined') {
+        assert.isTrue(e.composed);
+      }
+    });
+
+    test('Event bubbles', () => {
+      const e = element._dispatch(eName);
+      assert.isTrue(e.bubbles);
+    });
+
+    test('Event has detail', () => {
+      const e = element._dispatch(eName, eDetail);
+      assert.equal(e.detail, eDetail);
+    });
+  });
+
+  suite('_dispatchProjectRead()', () => {
+    let element;
+    setup(() => {
+      element = fixture('Basic');
+    });
+
+    test('Calls _dispatch()', () => {
+      const spy = sinon.spy(element, '_dispatch');
+      element._dispatchProjectRead('test');
+      assert.isTrue(spy.called);
+    });
+
+    test('Returns the event', () => {
+      const e = element._dispatchProjectRead('test');
+      assert.typeOf(e, 'customevent');
+    });
+
+    test('Event has type', () => {
+      const e = element._dispatchProjectRead('test');
+      assert.equal(e.type, 'project-read');
+    });
+
+    test('Event has id on detail', () => {
+      const e = element._dispatchProjectRead('test-id');
+      assert.equal(e.detail.id, 'test-id');
+    });
+  });
+
+  suite('_dispatchProjectList()', () => {
+    let element;
+    setup(() => {
+      element = fixture('Basic');
+    });
+
+    test('Calls _dispatch()', () => {
+      const spy = sinon.spy(element, '_dispatch');
+      element._dispatchProjectList('test');
+      assert.isTrue(spy.called);
+    });
+
+    test('Returns the event', () => {
+      const e = element._dispatchProjectList('test');
+      assert.typeOf(e, 'customevent');
+    });
+
+    test('Event has type', () => {
+      const e = element._dispatchProjectList('test');
+      assert.equal(e.type, 'request-project-list');
+    });
+
+    test('Event has id on detail', () => {
+      const e = element._dispatchProjectList('test-id');
+      assert.equal(e.detail.id, 'test-id');
+    });
+  });
+
+  suite('_dispatchRequestChanged()', () => {
+    let element;
+    const requestType = 'saved';
+    let request;
+    setup(() => {
+      element = fixture('Basic');
+      request = {name: 'test'};
+    });
+
+    test('Calls _dispatch()', () => {
+      const spy = sinon.spy(element, '_dispatch');
+      element._dispatchRequestChanged(requestType, request);
+      assert.isTrue(spy.called);
+    });
+
+    test('Returns the event', () => {
+      const e = element._dispatchRequestChanged(requestType, request);
+      assert.typeOf(e, 'customevent');
+    });
+
+    test('Event has type', () => {
+      const e = element._dispatchRequestChanged(requestType, request);
+      assert.equal(e.type, 'request-object-changed');
+    });
+
+    test('Event has "type" on detail', () => {
+      const e = element._dispatchRequestChanged(requestType, request);
+      assert.equal(e.detail.type, requestType);
+    });
+
+    test('Event has "request" on detail', () => {
+      const e = element._dispatchRequestChanged(requestType, request);
+      assert.deepEqual(e.detail.request, request);
+    });
+  });
+
+  suite('_requestDeletedHandler()', () => {
+    let element;
+    test('Ignores cancelable events', () => {
+      element = fixture('Basic');
+      element.requests = DataGenerator.generateHistoryRequestsData({
+        requestsSize: 10
       });
+      element._requestDeletedHandler({
+        cancelable: true,
+        detail: {
+          id: element.requests[0]._id
+        }
+      });
+      assert.lengthOf(element.requests, 10);
+    });
 
-      test('Is false when requests are cleared', () => {
-        element.requests = [{
-          _id: 'test'
-        }];
-        flush(() => {
-          element.requests = undefined;
-          assert.isFalse(element.hasRequests);
-        });
+    test('Ignores the event when no requests', () => {
+      element = fixture('Basic');
+      element.requests = [];
+      element._requestDeletedHandler({
+        cancelable: true,
+        detail: {
+          id: 'test'
+        }
+      });
+      assert.lengthOf(element.requests, 0);
+    });
+
+    test('Ignores the event when requests are undefined', () => {
+      element = fixture('Basic');
+      element._requestDeletedHandler({
+        cancelable: true,
+        detail: {
+          id: 'test'
+        }
+      });
+      assert.isUndefined(element.requests);
+    });
+
+    test('Calls _historyItemDeleted() when element\'s type is "history"', () => {
+      element = fixture('Basic');
+      element.requests = DataGenerator.generateHistoryRequestsData({
+        requestsSize: 10
+      });
+      const spy = sinon.spy(element, '_historyItemDeleted');
+      const id = element.requests[4]._id;
+      element._requestDeletedHandler({
+        cancelable: false,
+        detail: {
+          id
+        }
+      });
+      assert.isTrue(spy.called);
+      assert.equal(spy.args[0][0], id);
+    });
+
+    test('Calls _itemDeleted() when element\'s type is "saved"', () => {
+      element = fixture('BasicSaved');
+      element.requests = DataGenerator.generateRequests({
+        requestsSize: 10
+      });
+      const spy = sinon.spy(element, '_itemDeleted');
+      const id = element.requests[4]._id;
+      element._requestDeletedHandler({
+        cancelable: false,
+        detail: {
+          id
+        }
+      });
+      assert.isTrue(spy.called);
+      assert.equal(spy.args[0][0], id);
+    });
+  });
+
+  suite('_itemDeleted()', () => {
+    let element;
+    setup(() => {
+      element = fixture('BasicSaved');
+      element.requests = DataGenerator.generateRequests({
+        requestsSize: 10
       });
     });
 
+    test('Removes existing item', () => {
+      element._itemDeleted(element.requests[4]._id);
+      assert.lengthOf(element.requests, 9);
+    });
+
+    test('Ignores item if not found', () => {
+      element._itemDeleted('non-existing');
+      assert.lengthOf(element.requests, 10);
+    });
+  });
+
+  suite('_historyItemDeleted()', () => {
+    let element;
+    setup(() => {
+      element = fixture('Basic');
+      element.requests = DataGenerator.generateHistoryRequestsData({
+        requestsSize: 10
+      });
+    });
+
+    test('Removes existing item', () => {
+      element._historyItemDeleted(element.requests[4]._id);
+      assert.lengthOf(element.requests, 9);
+    });
+
+    test('Ignores item if not found', () => {
+      element._historyItemDeleted('non-existing');
+      assert.lengthOf(element.requests, 10);
+    });
+
+    test('Adds header to next item', () => {
+      const id = element.requests[4]._id;
+      element.requests[4].hasHeader = true;
+      element.requests[4].header = 'test-header';
+      element.requests[5].hasHeader = false;
+      element._historyItemDeleted(id);
+      assert.lengthOf(element.requests, 9);
+      const item = element.requests[4];
+      assert.isTrue(item.hasHeader, 'hasHeader is set');
+      assert.equal(item.header, 'test-header', 'header is set');
+    });
+
+    test('Will not update header when next item has own header', () => {
+      const id = element.requests[4]._id;
+      element.requests[4].hasHeader = true;
+      element.requests[4].header = 'test-header';
+      element.requests[5].hasHeader = true;
+      element.requests[5].header = 'other-header';
+      element._historyItemDeleted(id);
+      assert.lengthOf(element.requests, 9);
+      const item = element.requests[4];
+      assert.equal(item.header, 'other-header', 'header is mot updated');
+    });
+  });
+
+  suite('_requestChangedHandler()', () => {
+    test('Do nothing when event is cancelable', () => {
+      const element = fixture('Basic');
+      element._requestChangedHandler({
+        cancelable: true,
+        detail: {
+          request: {_id: 'test'}
+        }
+      });
+      assert.isUndefined(element.requests);
+    });
+
+    test('Calls "_historyTypeChanged()" for history type', () => {
+      const element = fixture('Basic');
+      const item = DataGenerator.generateHistoryObject();
+      const spy = sinon.spy(element, '_historyTypeChanged');
+      element._requestChangedHandler({
+        detail: {
+          request: item
+        }
+      });
+      assert.isTrue(spy.called, 'Function was called');
+      assert.deepEqual(spy.args[0][0], item, 'Argument is set');
+    });
+
+    test('Calls "_savedTypeChanged()" for saved type', () => {
+      const element = fixture('BasicSaved');
+      const item = DataGenerator.generateSavedItem();
+      const spy = sinon.spy(element, '_savedTypeChanged');
+      element._requestChangedHandler({
+        detail: {
+          request: item
+        }
+      });
+      assert.isTrue(spy.called, 'Function was called');
+      assert.deepEqual(spy.args[0][0], item, 'Argument is set');
+    });
+
+    test('Calls "_projectTypeChanged()" for saved type', () => {
+      const element = fixture('BasicSaved');
+      element.type = 'project';
+      const item = DataGenerator.generateSavedItem();
+      const spy = sinon.spy(element, '_projectTypeChanged');
+      element._requestChangedHandler({
+        detail: {
+          request: item
+        }
+      });
+      assert.isTrue(spy.called, 'Function was called');
+      assert.deepEqual(spy.args[0][0], item, 'Argument is set');
+    });
+  });
+
+  suite('_projectTypeChanged()', () => {
+    let element;
+    const projectId = 'test-project';
+    setup(() => {
+      element = fixture('Basic');
+      element.type = 'project';
+      element.projectId = projectId;
+      const requests = DataGenerator.generateRequests({
+        requestsSize: 10
+      });
+      requests.forEach((item) => item.projects = [projectId]);
+      element.requests = requests;
+    });
+
+    function genProjectItem() {
+      const item = DataGenerator.generateSavedItem();
+      item.projects = [projectId];
+      return item;
+    }
+
+    test('Does nothing when no project id', () => {
+      element.projectId = undefined;
+      const item = genProjectItem();
+      element._projectTypeChanged(item);
+      assert.lengthOf(element.requests, 10);
+    });
+
+    test('Creates requests array', () => {
+      element.requests = undefined;
+      const item = genProjectItem();
+      element._projectTypeChanged(item);
+      assert.lengthOf(element.requests, 1);
+    });
+
+    test('Ignores item if not related to the project and no requests', () => {
+      element.requests = undefined;
+      const item = genProjectItem();
+      item.projects = ['other'];
+      element._projectTypeChanged(item);
+      assert.isUndefined(element.requests);
+    });
+
+    test('Adds new item to requests array', () => {
+      const item = genProjectItem();
+      element._projectTypeChanged(item);
+      assert.lengthOf(element.requests, 11);
+    });
+
+    test('Updates existing item', () => {
+      const item = Object.assign({}, element.requests[2]);
+      item.name = 'test-name';
+      element._projectTypeChanged(item);
+      assert.lengthOf(element.requests, 10);
+      assert.equal(element.requests[2].name, 'test-name');
+    });
+
+    test('Removes item is no longer related to project', () => {
+      const item = Object.assign({}, element.requests[2]);
+      item.projects = undefined;
+      item.legacyProject = undefined;
+      element._projectTypeChanged(item);
+      assert.lengthOf(element.requests, 9);
+    });
+
+    test('Ignores item not related to the project', () => {
+      const item = genProjectItem();
+      item.projects = ['non-existing-id'];
+      element._projectTypeChanged(item);
+      assert.lengthOf(element.requests, 10);
+    });
+  });
+
+  suite('_isProjectRequest()', () => {
+    let element;
+    const projectId = 'test-project';
+    setup(() => {
+      element = fixture('Basic');
+      element.type = 'project';
+      element.projectId = projectId;
+    });
+
+    test('Returns false when no project id', () => {
+      element.projectId = undefined;
+      const item = DataGenerator.generateSavedItem();
+      const result = element._isProjectRequest(item);
+      assert.isFalse(result);
+    });
+
+    test('Returns false when item is not related to current project', () => {
+      const item = DataGenerator.generateSavedItem();
+      const result = element._isProjectRequest(item);
+      assert.isFalse(result);
+    });
+
+    test('Returns false when item has other prjects', () => {
+      const item = DataGenerator.generateSavedItem();
+      item.projects = ['other'];
+      const result = element._isProjectRequest(item);
+      assert.isFalse(result);
+    });
+
+    test('Returns true when project is on projects list', () => {
+      const item = DataGenerator.generateSavedItem();
+      item.projects = [projectId];
+      const result = element._isProjectRequest(item);
+      assert.isTrue(result);
+    });
+
+    test('Returns true when project is set on legacyProject', () => {
+      const item = DataGenerator.generateSavedItem();
+      item.legacyProject = projectId;
+      const result = element._isProjectRequest(item);
+      assert.isTrue(result);
+    });
+  });
+
+  suite('_savedTypeChanged()', () => {
+    let element;
+    setup(() => {
+      element = fixture('BasicSaved');
+      element.requests = DataGenerator.generateRequests({
+        requestsSize: 10
+      });
+    });
+    test('Do nothing when type is not set', () => {
+      element.type = undefined;
+      const item = DataGenerator.generateSavedItem();
+      element._savedTypeChanged(item);
+      assert.lengthOf(element.requests, 10);
+    });
+
+    test('Do nothing when type is not saved', () => {
+      element.type = 'history';
+      const item = DataGenerator.generateSavedItem();
+      element._savedTypeChanged(item);
+      assert.lengthOf(element.requests, 10);
+    });
+
+    test('Do nothing when request type is not saved', () => {
+      const item = DataGenerator.generateHistoryObject();
+      element._savedTypeChanged(item);
+      assert.lengthOf(element.requests, 10);
+    });
+
+    test('Creates requests array when request type is "saved"', () => {
+      element.requests = undefined;
+      const item = DataGenerator.generateSavedItem();
+      item.type = 'saved';
+      element._savedTypeChanged(item);
+      assert.lengthOf(element.requests, 1);
+    });
+
+    test('Creates requests array when request type is "saved-requests"', () => {
+      element.requests = undefined;
+      const item = DataGenerator.generateSavedItem();
+      item.type = 'saved-requests';
+      element._savedTypeChanged(item);
+      assert.lengthOf(element.requests, 1);
+    });
+
+    test('Updates existing request', () => {
+      const item = Object.assign({}, element.requests[2]);
+      item.name = 'test-name';
+      element._savedTypeChanged(item);
+      assert.lengthOf(element.requests, 10);
+      assert.equal(element.requests[2].name, 'test-name');
+    });
+
+    test('Adds new request to the top of the list', () => {
+      const item = DataGenerator.generateSavedItem();
+      element._savedTypeChanged(item);
+      assert.lengthOf(element.requests, 11);
+      assert.deepEqual(element.requests[0], item);
+    });
+  });
+
+  suite('_historyTypeChanged()', () => {
+    let element;
+    setup(() => {
+      element = fixture('Basic');
+      element.requests = DataGenerator.generateHistoryRequestsData({
+        requestsSize: 10
+      });
+    });
+    test('Do nothing when type is not set', () => {
+      element.type = undefined;
+      const item = DataGenerator.generateHistoryObject();
+      element._historyTypeChanged(item);
+      assert.lengthOf(element.requests, 10);
+    });
+
+    test('Do nothing when type is not history', () => {
+      element.type = 'saved';
+      const item = DataGenerator.generateHistoryObject();
+      element._historyTypeChanged(item);
+      assert.lengthOf(element.requests, 10);
+    });
+
+    test('Do nothing when request type is not saved', () => {
+      const item = DataGenerator.generateSavedItem();
+      element._historyTypeChanged(item);
+      assert.lengthOf(element.requests, 10);
+    });
+
+    test('Creates requests array when request type is "history"', () => {
+      element.requests = undefined;
+      const item = DataGenerator.generateHistoryObject();
+      item.type = 'history';
+      element._historyTypeChanged(item);
+      assert.lengthOf(element.requests, 1);
+    });
+
+    test('Ignores the argument when it\'s not type of "history"', () => {
+      const item = DataGenerator.generateHistoryObject();
+      item.type = 'saved';
+      element._historyTypeChanged(item);
+      assert.lengthOf(element.requests, 10);
+    });
+
+    test('Creates requests array when request type is "history-requests"', () => {
+      element.requests = undefined;
+      const item = DataGenerator.generateHistoryObject();
+      item.type = 'history-requests';
+      element._historyTypeChanged(item);
+      assert.lengthOf(element.requests, 1);
+    });
+
+    test('Calls _unshiftHistoryItem() when no requests', () => {
+      element.requests = undefined;
+      const item = DataGenerator.generateHistoryObject();
+      const spy = sinon.spy(element, '_unshiftHistoryItem');
+      element._historyTypeChanged(item);
+      assert.isTrue(spy.called, 'Function is called');
+      assert.deepEqual(spy.args[0][0], item, 'Argument is set');
+    });
+
+    test('Calls _unshiftHistoryItem() when request do not match current requests', () => {
+      const item = DataGenerator.generateHistoryObject();
+      const spy = sinon.spy(element, '_unshiftHistoryItem');
+      element._historyTypeChanged(item);
+      assert.isTrue(spy.called, 'Function is called');
+      assert.deepEqual(spy.args[0][0], item, 'Argument is set');
+    });
+
+    test('Updates existing request', () => {
+      const value = 'x-test: x-value';
+      const item = Object.assign({}, element.requests[2]);
+      item.headers = value;
+      element._historyTypeChanged(item);
+      assert.lengthOf(element.requests, 10);
+      assert.equal(element.requests[2].headers, value);
+    });
+
+    test('Adds header to next item', () => {
+      const item = Object.assign({}, element.requests[2]);
+      delete item.header;
+      delete item.hasHeader;
+      element.requests[2].hasHeader = true;
+      element.requests[2].header = 'test-header';
+      element.requests[3].hasHeader = false;
+      element.requests[3].header = undefined;
+      element._historyTypeChanged(item);
+      assert.lengthOf(element.requests, 10);
+      const next = element.requests[3];
+      assert.isTrue(next.hasHeader, 'hasHeader is set');
+      assert.equal(next.header, 'test-header', 'header is set');
+    });
+
+    test('Will not update header when next item has own header', () => {
+      const item = Object.assign({}, element.requests[2]);
+      delete item.header;
+      delete item.hasHeader;
+      element.requests[2].hasHeader = true;
+      element.requests[2].header = 'test-header';
+      element.requests[3].hasHeader = true;
+      element.requests[3].header = 'other-header';
+      element._historyTypeChanged(item);
+      assert.lengthOf(element.requests, 10);
+      const next = element.requests[3];
+      assert.equal(next.header, 'other-header', 'header is mot updated');
+    });
+
+    test('Calls _appendTodaysHeader() when first item', () => {
+      const item = Object.assign({}, element.requests[0]);
+      delete item.header;
+      delete item.hasHeader;
+      delete element.requests[0].header;
+      delete element.requests[0].hasHeader;
+      element._historyTypeChanged(item);
+      const updated = element.requests[0];
+      assert.isTrue(updated.hasHeader);
+      assert.equal(updated.header, 'Today', 'header is mot updated');
+    });
+  });
+
+  suite('_appendTodaysHeader()', () => {
+    let element;
+    setup(() => {
+      element = fixture('Basic');
+    });
+
+    test('Adds header', () => {
+      const item = {};
+      element._appendTodaysHeader(item);
+      assert.equal(item.header, 'Today');
+    });
+
+    test('Adds hasHeader', () => {
+      const item = {};
+      element._appendTodaysHeader(item);
+      assert.isTrue(item.hasHeader);
+    });
+
+    test('Adds today', () => {
+      const item = {};
+      element._appendTodaysHeader(item);
+      assert.isTrue(item.today);
+    });
+  });
+
+  suite('_unshiftHistoryItem()', () => {
+    let element;
+    setup(() => {
+      element = fixture('Basic');
+      element.requests = DataGenerator.generateHistoryRequestsData({
+        requestsSize: 10
+      });
+    });
+
+    test('Calls _appendTodaysHeader()', () => {
+      const spy = sinon.spy(element, '_appendTodaysHeader');
+      const item = DataGenerator.generateHistoryObject();
+      element._unshiftHistoryItem(item);
+      assert.isTrue(spy.called);
+      assert.deepEqual(spy.args[0][0], item);
+      assert.isTrue(item.hasHeader);
+    });
+
+    test('Creates requests if not exists', () => {
+      element.requests = undefined;
+      const item = DataGenerator.generateHistoryObject();
+      element._unshiftHistoryItem(item);
+      assert.lengthOf(element.requests, 1);
+      assert.deepEqual(element.requests[0], item);
+    });
+
+    test('Adds item to the array on index 0', () => {
+      const item = DataGenerator.generateHistoryObject();
+      element._unshiftHistoryItem(item);
+      assert.lengthOf(element.requests, 11);
+      assert.deepEqual(element.requests[0], item);
+    });
+
+    test('Removes header from first item if is today', () => {
+      element.set('requests.0.header', 'test');
+      element.set('requests.0.hasHeader', true);
+      element.set('requests.0.today', true);
+      const item = DataGenerator.generateHistoryObject();
+      element._unshiftHistoryItem(item);
+      assert.isUndefined(element.requests[1].header);
+      assert.isFalse(element.requests[1].hasHeader);
+    });
+  });
+
+  suite('_legacySort()', () => {
+    let element;
+    setup(() => {
+      element = fixture('Basic');
+    });
+
+    test('Returns 1 when a projectOrder is > than b projectOrder', () => {
+      const result = element._legacySort({
+        projectOrder: 1
+      }, {
+        projectOrder: 0
+      });
+      assert.equal(result, 1);
+    });
+
+    test('Returns -1 when a projectOrder is < than b projectOrder', () => {
+      const result = element._legacySort({
+        projectOrder: 0
+      }, {
+        projectOrder: 1
+      });
+      assert.equal(result, -1);
+    });
+
+    test('Returns 1 when a name is > than b name', () => {
+      const result = element._legacySort({
+        projectOrder: 0,
+        name: 'b'
+      }, {
+        projectOrder: 0,
+        name: 'a'
+      });
+      assert.equal(result, 1);
+    });
+
+    test('Returns -1 when a name is < than b name', () => {
+      const result = element._legacySort({
+        projectOrder: 0,
+        name: 'a'
+      }, {
+        projectOrder: 0,
+        name: 'b'
+      });
+      assert.equal(result, -1);
+    });
+
+    test('Returns 0 when objects equal', () => {
+      const result = element._legacySort({
+        projectOrder: 0,
+        name: 'a'
+      }, {
+        projectOrder: 0,
+        name: 'a'
+      });
+      assert.equal(result, 0);
+    });
+  });
+
+  suite('_updateRequest()', () => {
+    test('Rejects when type is undefined', () => {
+      const item = DataGenerator.generateHistoryObject();
+      const element = fixture('Basic');
+      element.type = 'unknown';
+      return element._updateRequest(item)
+      .catch((cause) => {
+        assert.equal(cause.message, 'Unknown request type');
+      });
+    });
+
+    test('Calls _dispatchRequestChanged() for history object', () => {
+      const item = DataGenerator.generateHistoryObject();
+      const element = fixture('Basic');
+      const spy = sinon.spy(element, '_dispatchRequestChanged');
+      return element._updateRequest(item)
+      .catch(() => {})
+      .then(() => {
+        assert.isTrue(spy.called);
+        assert.equal(spy.args[0][0], 'history');
+        assert.deepEqual(spy.args[0][1], item);
+      });
+    });
+
+    test('Calls _dispatchRequestChanged() for saved object', () => {
+      const item = DataGenerator.generateSavedItem();
+      const element = fixture('BasicSaved');
+      const spy = sinon.spy(element, '_dispatchRequestChanged');
+      return element._updateRequest(item)
+      .catch(() => {})
+      .then(() => {
+        assert.isTrue(spy.called);
+        assert.equal(spy.args[0][0], 'saved');
+        assert.deepEqual(spy.args[0][1], item);
+      });
+    });
+
+    test('Calls _dispatchRequestChanged() for saved object in a project', () => {
+      const item = DataGenerator.generateSavedItem();
+      const element = fixture('BasicSaved');
+      element.type = 'project';
+      const spy = sinon.spy(element, '_dispatchRequestChanged');
+      return element._updateRequest(item)
+      .catch(() => {})
+      .then(() => {
+        assert.isTrue(spy.called);
+        assert.equal(spy.args[0][0], 'saved');
+        assert.deepEqual(spy.args[0][1], item);
+      });
+    });
+
+    test('Rejects the promise when no model', () => {
+      const item = DataGenerator.generateSavedItem();
+      const element = fixture('BasicSaved');
+      return element._updateRequest(item)
+      .catch((cause) => {
+        assert.equal(cause.message, 'Request model not found');
+      });
+    });
+
+    test('Returns a promise when event is handled', () => {
+      const item = DataGenerator.generateSavedItem();
+      const element = fixture('BasicSaved');
+      element.addEventListener('request-object-changed', function f(e) {
+        element.removeEventListener('request-object-changed', f);
+        e.preventDefault();
+        e.detail.result = Promise.resolve();
+      });
+      return element._updateRequest(item);
+    });
+  });
+
+  suite('_updateBulk()', () => {
+    let element;
+    setup(() => {
+      element = fixture('BasicSaved');
+    });
+
+    function handleEvent(e) {
+      e.preventDefault();
+      e.detail.result = Promise.resolve();
+    }
+
+    test('Calls _updateRequest() for each item', () => {
+      const items = DataGenerator.generateRequests({
+        requestsSize: 3
+      });
+      const spy = sinon.spy(element, '_updateRequest');
+      element.addEventListener('request-object-changed', handleEvent);
+      element._updateBulk(items);
+      element.removeEventListener('request-object-changed', handleEvent);
+      assert.equal(spy.callCount, 3);
+      assert.deepEqual(spy.args[0][0], items[0]);
+      assert.deepEqual(spy.args[1][0], items[1]);
+      assert.deepEqual(spy.args[2][0], items[2]);
+    });
+
+    test('Returns a promise', () => {
+      const items = DataGenerator.generateRequests({
+        requestsSize: 1
+      });
+      element.addEventListener('request-object-changed', handleEvent);
+      const result = element._updateBulk(items);
+      element.removeEventListener('request-object-changed', handleEvent);
+      assert.typeOf(result.then, 'function');
+      return result;
+    });
+  });
+
+  suite('_dispatchProjectUpdate()', () => {
+    let element;
+    setup(() => {
+      element = fixture('BasicSaved');
+      element.requests = DataGenerator.generateRequests({
+        requestsSize: 3
+      });
+    });
+
+    function handleEvent(e) {
+      e.preventDefault();
+      e.detail.result = Promise.resolve();
+    }
+
+    test('Returns a promise', () => {
+      const item = DataGenerator.createProjectObject();
+      element.addEventListener('project-object-changed', handleEvent);
+      const result = element._dispatchProjectUpdate(item);
+      element.removeEventListener('project-object-changed', handleEvent);
+      assert.typeOf(result.then, 'function');
+      return result;
+    });
+
+    test('Calles _dispatch()', () => {
+      const item = DataGenerator.createProjectObject();
+      const spy = sinon.spy(element, '_dispatch');
+      element.addEventListener('project-object-changed', handleEvent);
+      const result = element._dispatchProjectUpdate(item);
+      element.removeEventListener('project-object-changed', handleEvent);
+      assert.isTrue(spy.called);
+      assert.equal(spy.args[0][0], 'project-object-changed');
+      return result;
+    });
+
+    test('Rejects when model not found', () => {
+      const item = DataGenerator.createProjectObject();
+      return element._dispatchProjectUpdate(item)
+      .then(() => {
+        throw new Error('Should not resolve');
+      })
+      .catch((cause) => {
+        assert.equal(cause.message, 'Projects model not found');
+      });
+    });
+  });
+
+  suite('_projectChanged()', () => {
+    let element;
+    setup(() => {
+      element = fixture('BasicSaved');
+      element.project = DataGenerator.createProjectObject();
+      element.type = 'project';
+    });
+
+    function fire(project, cancelable, node) {
+      if (typeof cancelable === 'undefined') {
+        cancelable = false;
+      }
+      const e = new CustomEvent('project-object-changed', {
+        bubbles: true,
+        cancelable,
+        detail: {
+          project
+        }
+      });
+      (node || document.body).dispatchEvent(e);
+      return e;
+    }
+
+    test('Updates the project', () => {
+      const item = Object.assign({}, element.project);
+      item.name = 'other-name';
+      fire(item);
+      assert.equal(element.project.name, 'other-name');
+    });
+
+    test('Ignores event when event is cancelable', () => {
+      const item = Object.assign({}, element.project);
+      item.name = 'other-name';
+      fire(item, true);
+      assert.notEqual(element.project.name, 'other-name');
+    });
+
+    test('Ignores event when type is not project', () => {
+      const item = Object.assign({}, element.project);
+      item.name = 'other-name';
+      element.type = 'saved';
+      fire(item);
+      assert.notEqual(element.project.name, 'other-name');
+    });
+
+    test('Ignores event when project is not set', () => {
+      const item = Object.assign({}, element.project);
+      item.name = 'other-name';
+      element.project = undefined;
+      fire(item);
+      assert.isUndefined(element.project);
+    });
+
+    test('Ignores event when disaptches by self', () => {
+      const item = Object.assign({}, element.project);
+      item.name = 'other-name';
+      fire(item, false, element);
+      assert.notEqual(element.project.name, 'other-name');
+    });
+
+    test('Will not set project if different id', () => {
+      const item = Object.assign({}, element.project);
+      item._id = 'other-id';
+      fire(item);
+      assert.notEqual(element.project._id, 'other-id');
+    });
+  });
+
+  suite('_persistRequestsOrder()', () => {
+    let element;
+
+    function handleEvent(e) {
+      e.preventDefault();
+      e.detail.result = Promise.resolve();
+    }
+
+    setup(() => {
+      element = fixture('BasicSaved');
+      element.project = DataGenerator.createProjectObject();
+      element.requests = DataGenerator.generateRequests({
+        requestsSize: 3
+      });
+      element.type = 'project';
+      element.addEventListener('project-object-changed', handleEvent);
+    });
+
+    teardown(() => {
+      element.removeEventListener('project-object-changed', handleEvent);
+    });
+
+    test('Rejects when no project', () => {
+      element.project = undefined;
+      return element._persistRequestsOrder()
+      .then(() => {
+        throw new Error('Should not resolve');
+      })
+      .catch((cause) => {
+        assert.equal(cause.message, '"project" is not set');
+      });
+    });
+
+    test('Resolves unchanged when list of requests equals', () => {
+      element.project.requests = element.requests.map((i) => i._id);
+      const spy = sinon.spy(element, '_dispatchProjectUpdate');
+      return element._persistRequestsOrder()
+      .then(() => {
+        assert.isFalse(spy.called);
+      });
+    });
+
+    test('Calls _dispatchProjectUpdate() when new order detected', () => {
+      element.project.requests = undefined;
+      const spy = sinon.spy(element, '_dispatchProjectUpdate');
+      return element._persistRequestsOrder()
+      .then(() => {
+        assert.isTrue(spy.called);
+        assert.equal(spy.args[0][0]._id, element.project._id);
+      });
+    });
+
+    test('Updates requests on the project', () => {
+      element.project.requests = undefined;
+      return element._persistRequestsOrder()
+      .then(() => {
+        assert.deepEqual(element.project.requests, element.requests.map((item) => item._id));
+      });
+    });
+  });
+
+  suite('_idsArrayEqual()', () => {
+    let element;
+    setup(() => {
+      element = fixture('Basic');
+    });
+
+    test('Returns true when both undefined', () => {
+      const result = element._idsArrayEqual();
+      assert.isTrue(result);
+    });
+
+    test('Returns true when both empty', () => {
+      const result = element._idsArrayEqual([], []);
+      assert.isTrue(result);
+    });
+
+    test('Returns true when has the same order', () => {
+      const result = element._idsArrayEqual(['a', 'b'], ['a', 'b']);
+      assert.isTrue(result);
+    });
+
+    test('Returns false when not the same order', () => {
+      const result = element._idsArrayEqual(['b', 'a'], ['a', 'b']);
+      assert.isFalse(result);
+    });
+
+    test('Returns false when different size', () => {
+      const result = element._idsArrayEqual(['a'], ['a', 'b']);
+      assert.isFalse(result);
+    });
+
+    test('Returns false when A is undefined', () => {
+      const result = element._idsArrayEqual(undefined, ['a', 'b']);
+      assert.isFalse(result);
+    });
+
+    test('Returns false when B is undefined', () => {
+      const result = element._idsArrayEqual(['a', 'b'], undefined);
+      assert.isFalse(result);
+    });
+  });
+
+  suite('List types computations', () => {
     const iconWidthProperty = '--paper-item-icon-width';
     const iconWidths = ['72px', '48px', '36px'];
 
-    suite('Default list type', (done) => {
+    suite('Default list type', () => {
       test(`Icon width is ${iconWidths[0]} for default list style`, (done) => {
         let style;
         const element = fixture('Default');
@@ -90,7 +1170,7 @@
         });
       });
 
-      test(`Icon width is ${iconWidths[0]} for inital list style`, () => {
+      test(`Icon width is ${iconWidths[0]} for inital list style`, (done) => {
         const element = fixture('Basic');
         flush(() => {
           let style;
@@ -113,10 +1193,21 @@
         const element = fixture('Default');
         assert.isTrue(element._hasTwoLines);
       });
+
+      test('Calls notifyResize() when defined', (done) => {
+        let called = false;
+        const element = fixture('Default');
+        element.notifyResize = () => called = true;
+        element.listType = 'comfortable';
+        flush(() => {
+          assert.isTrue(called);
+          done();
+        });
+      });
     });
 
-    suite('Comfortable list type', (done) => {
-      test('Icon width is ' + iconWidths[1], () => {
+    suite('Comfortable list type', () => {
+      test('Icon width is ' + iconWidths[1], (done) => {
         let style;
         const element = fixture('Comfortable');
         flush(() => {
@@ -136,8 +1227,8 @@
       });
     });
 
-    suite('Compact list type', (done) => {
-      test('Icon width is ' + iconWidths[2], () => {
+    suite('Compact list type', () => {
+      test('Icon width is ' + iconWidths[2], (done) => {
         let style;
         const element = fixture('Compact');
         flush(() => {
@@ -154,112 +1245,6 @@
       test('_hasTwoLines is computed', () => {
         const element = fixture('Compact');
         assert.isFalse(element._hasTwoLines);
-      });
-    });
-
-    suite('_requestDeletedHandler()', () => {
-      let requests;
-      let element;
-      setup(() => {
-        requests = DataGenerator.generateRequests({
-          requestsSize: 10
-        });
-        element = fixture('Basic');
-        element.requests = requests;
-      });
-
-      test('Ignores cancelable events', () => {
-        element._requestDeletedHandler({
-          cancelable: true,
-          detail: {
-            id: requests[0]._id
-          }
-        });
-        assert.lengthOf(element.requests, 10);
-      });
-
-      test('Removes request from the list', () => {
-        element._requestDeletedHandler({
-          cancelable: false,
-          detail: {
-            id: requests[4]._id
-          }
-        });
-        assert.lengthOf(element.requests, 9);
-      });
-
-      test('Does nothing for unknown item', () => {
-        element._requestDeletedHandler({
-          cancelable: false,
-          detail: {
-            id: 'something'
-          }
-        });
-        assert.lengthOf(element.requests, 10);
-      });
-    });
-
-    const hrs24 = 86400000;
-    const hrs96 = 4 * hrs24;
-
-    function requestUpdated(item) {
-      const e = new CustomEvent('request-object-changed', {
-        detail: {
-          request: item,
-          type: 'history'
-        },
-        bubbles: true
-      });
-      document.body.dispatchEvent(e);
-    }
-
-    suite('History list update', function() {
-      let element;
-      let topItem;
-      setup(() => {
-        element = fixture('History');
-        let items = [{
-          _id: 'a',
-          created: (Date.now() - 2400)
-        }, {
-          _id: 'b',
-          created: (Date.now() - 1000)
-        }, {
-          _id: 'c',
-          created: (Date.now() - hrs24)
-        }, {
-          _id: 'd',
-          created: (Date.now() - hrs96)
-        }];
-        const result = element._processHistoryResults(items);
-        element.requests = result;
-        topItem = {
-          _id: 'top',
-          created: Date.now()
-        };
-      });
-
-      test('Add an item to the list', () => {
-        requestUpdated(topItem);
-        assert.lengthOf(element.requests, 5);
-      });
-
-      test('Item is added to the top of the list', () => {
-        requestUpdated(topItem);
-        const top = element.requests[0];
-        assert.equal(top._id, 'top');
-      });
-
-      test('New item has header', () => {
-        requestUpdated(topItem);
-        const top = element.requests[0];
-        assert.isTrue(top.hasHeader);
-      });
-
-      test('New item has header value is today', () => {
-        requestUpdated(topItem);
-        const top = element.requests[0];
-        assert.equal(top.header, 'Today');
       });
     });
   });
