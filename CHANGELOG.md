@@ -13,3 +13,8 @@
 
 
 
+## [2.0.1](https://github.com/advanced-rest-client/requests-list-mixin/compare/2.0.0...2.0.1) (2019-01-26)
+
+
+
+
