@@ -335,7 +335,7 @@
                   "column": 4
                 },
                 "end": {
-                  "line": 214,
+                  "line": 216,
                   "column": 5
                 }
               },
@@ -356,11 +356,11 @@
               "privacy": "protected",
               "sourceRange": {
                 "start": {
-                  "line": 219,
+                  "line": 221,
                   "column": 4
                 },
                 "end": {
-                  "line": 244,
+                  "line": 246,
                   "column": 5
                 }
               },
@@ -382,11 +382,11 @@
               "privacy": "protected",
               "sourceRange": {
                 "start": {
-                  "line": 251,
+                  "line": 253,
                   "column": 4
                 },
                 "end": {
-                  "line": 262,
+                  "line": 264,
                   "column": 5
                 }
               },
@@ -407,11 +407,11 @@
               "privacy": "protected",
               "sourceRange": {
                 "start": {
-                  "line": 267,
+                  "line": 269,
                   "column": 4
                 },
                 "end": {
-                  "line": 287,
+                  "line": 289,
                   "column": 5
                 }
               },
@@ -421,84 +421,6 @@
                   "name": "request",
                   "type": "Object",
                   "description": "Changed request object."
-                }
-              ],
-              "return": {
-                "type": "void"
-              }
-            },
-            {
-              "name": "_historyTypeChanged",
-              "description": "Handles request change when type is saved or history.",
-              "privacy": "protected",
-              "sourceRange": {
-                "start": {
-                  "line": 292,
-                  "column": 4
-                },
-                "end": {
-                  "line": 323,
-                  "column": 5
-                }
-              },
-              "metadata": {},
-              "params": [
-                {
-                  "name": "request",
-                  "type": "Object",
-                  "description": "Changed request object."
-                }
-              ],
-              "return": {
-                "type": "void"
-              }
-            },
-            {
-              "name": "_appendTodaysHeader",
-              "description": "Appends \"today\" header to the item.",
-              "privacy": "protected",
-              "sourceRange": {
-                "start": {
-                  "line": 330,
-                  "column": 4
-                },
-                "end": {
-                  "line": 334,
-                  "column": 5
-                }
-              },
-              "metadata": {},
-              "params": [
-                {
-                  "name": "item",
-                  "type": "Object",
-                  "description": "History document"
-                }
-              ],
-              "return": {
-                "type": "void"
-              }
-            },
-            {
-              "name": "_unshiftHistoryItem",
-              "description": "Adds a new history item to the top of the list.",
-              "privacy": "protected",
-              "sourceRange": {
-                "start": {
-                  "line": 339,
-                  "column": 4
-                },
-                "end": {
-                  "line": 352,
-                  "column": 5
-                }
-              },
-              "metadata": {},
-              "params": [
-                {
-                  "name": "item",
-                  "type": "Object",
-                  "description": "A history item to add"
                 }
               ],
               "return": {
@@ -511,11 +433,11 @@
               "privacy": "protected",
               "sourceRange": {
                 "start": {
-                  "line": 358,
+                  "line": 295,
                   "column": 4
                 },
                 "end": {
-                  "line": 362,
+                  "line": 299,
                   "column": 5
                 }
               },
@@ -538,11 +460,11 @@
               "privacy": "protected",
               "sourceRange": {
                 "start": {
-                  "line": 368,
+                  "line": 305,
                   "column": 4
                 },
                 "end": {
-                  "line": 372,
+                  "line": 309,
                   "column": 5
                 }
               },
@@ -565,11 +487,11 @@
               "privacy": "protected",
               "sourceRange": {
                 "start": {
-                  "line": 380,
+                  "line": 317,
                   "column": 4
                 },
                 "end": {
-                  "line": 385,
+                  "line": 322,
                   "column": 5
                 }
               },
@@ -597,11 +519,11 @@
               "privacy": "public",
               "sourceRange": {
                 "start": {
-                  "line": 392,
+                  "line": 328,
                   "column": 4
                 },
                 "end": {
-                  "line": 425,
+                  "line": 361,
                   "column": 5
                 }
               },
@@ -624,11 +546,11 @@
               "privacy": "protected",
               "sourceRange": {
                 "start": {
-                  "line": 434,
+                  "line": 370,
                   "column": 4
                 },
                 "end": {
-                  "line": 448,
+                  "line": 384,
                   "column": 5
                 }
               },
@@ -653,11 +575,11 @@
               "privacy": "protected",
               "sourceRange": {
                 "start": {
-                  "line": 455,
+                  "line": 391,
                   "column": 4
                 },
                 "end": {
-                  "line": 458,
+                  "line": 394,
                   "column": 5
                 }
               },
@@ -680,11 +602,11 @@
               "privacy": "protected",
               "sourceRange": {
                 "start": {
-                  "line": 464,
+                  "line": 400,
                   "column": 4
                 },
                 "end": {
-                  "line": 483,
+                  "line": 419,
                   "column": 5
                 }
               },
@@ -707,11 +629,11 @@
               "privacy": "protected",
               "sourceRange": {
                 "start": {
-                  "line": 485,
+                  "line": 421,
                   "column": 4
                 },
                 "end": {
-                  "line": 487,
+                  "line": 423,
                   "column": 5
                 }
               },
@@ -728,11 +650,11 @@
               "privacy": "protected",
               "sourceRange": {
                 "start": {
-                  "line": 493,
+                  "line": 429,
                   "column": 4
                 },
                 "end": {
-                  "line": 498,
+                  "line": 434,
                   "column": 5
                 }
               },
@@ -754,11 +676,11 @@
               "privacy": "protected",
               "sourceRange": {
                 "start": {
-                  "line": 504,
+                  "line": 440,
                   "column": 4
                 },
                 "end": {
-                  "line": 522,
+                  "line": 458,
                   "column": 5
                 }
               },
@@ -779,11 +701,11 @@
               "privacy": "protected",
               "sourceRange": {
                 "start": {
-                  "line": 528,
+                  "line": 464,
                   "column": 4
                 },
                 "end": {
-                  "line": 541,
+                  "line": 477,
                   "column": 5
                 }
               },
@@ -799,11 +721,11 @@
               "privacy": "protected",
               "sourceRange": {
                 "start": {
-                  "line": 548,
+                  "line": 484,
                   "column": 4
                 },
                 "end": {
-                  "line": 564,
+                  "line": 500,
                   "column": 5
                 }
               },
@@ -831,11 +753,11 @@
               "privacy": "protected",
               "sourceRange": {
                 "start": {
-                  "line": 572,
+                  "line": 508,
                   "column": 4
                 },
                 "end": {
-                  "line": 580,
+                  "line": 516,
                   "column": 5
                 }
               },
@@ -857,11 +779,11 @@
               "privacy": "protected",
               "sourceRange": {
                 "start": {
-                  "line": 586,
+                  "line": 522,
                   "column": 4
                 },
                 "end": {
-                  "line": 596,
+                  "line": 532,
                   "column": 5
                 }
               },
@@ -886,7 +808,7 @@
               "column": 0
             },
             "end": {
-              "line": 599,
+              "line": 535,
               "column": 2
             }
           },

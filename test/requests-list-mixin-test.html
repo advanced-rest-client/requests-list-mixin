@@ -362,8 +362,9 @@
       assert.isUndefined(element.requests);
     });
 
-    test('Calls "_historyTypeChanged()" for history type', () => {
+    test('Calls "_historyTypeChanged()" for history type - if exists', () => {
       const element = fixture('Basic');
+      element._historyTypeChanged = () => {};
       const item = DataGenerator.generateHistoryObject();
       const spy = sinon.spy(element, '_historyTypeChanged');
       element._requestChangedHandler({
@@ -373,6 +374,17 @@
       });
       assert.isTrue(spy.called, 'Function was called');
       assert.deepEqual(spy.args[0][0], item, 'Argument is set');
+    });
+
+    test('Ignores call to "_historyTypeChanged()" if not exists', () => {
+      const element = fixture('Basic');
+      const item = DataGenerator.generateHistoryObject();
+      element._requestChangedHandler({
+        detail: {
+          request: item
+        }
+      });
+      // No error
     });
 
     test('Calls "_savedTypeChanged()" for saved type', () => {
@@ -576,194 +588,6 @@
       element._savedTypeChanged(item);
       assert.lengthOf(element.requests, 11);
       assert.deepEqual(element.requests[0], item);
-    });
-  });
-
-  suite('_historyTypeChanged()', () => {
-    let element;
-    setup(() => {
-      element = fixture('Basic');
-      element.requests = DataGenerator.generateHistoryRequestsData({
-        requestsSize: 10
-      });
-    });
-    test('Do nothing when type is not set', () => {
-      element.type = undefined;
-      const item = DataGenerator.generateHistoryObject();
-      element._historyTypeChanged(item);
-      assert.lengthOf(element.requests, 10);
-    });
-
-    test('Do nothing when type is not history', () => {
-      element.type = 'saved';
-      const item = DataGenerator.generateHistoryObject();
-      element._historyTypeChanged(item);
-      assert.lengthOf(element.requests, 10);
-    });
-
-    test('Do nothing when request type is not saved', () => {
-      const item = DataGenerator.generateSavedItem();
-      element._historyTypeChanged(item);
-      assert.lengthOf(element.requests, 10);
-    });
-
-    test('Creates requests array when request type is "history"', () => {
-      element.requests = undefined;
-      const item = DataGenerator.generateHistoryObject();
-      item.type = 'history';
-      element._historyTypeChanged(item);
-      assert.lengthOf(element.requests, 1);
-    });
-
-    test('Ignores the argument when it\'s not type of "history"', () => {
-      const item = DataGenerator.generateHistoryObject();
-      item.type = 'saved';
-      element._historyTypeChanged(item);
-      assert.lengthOf(element.requests, 10);
-    });
-
-    test('Creates requests array when request type is "history-requests"', () => {
-      element.requests = undefined;
-      const item = DataGenerator.generateHistoryObject();
-      item.type = 'history-requests';
-      element._historyTypeChanged(item);
-      assert.lengthOf(element.requests, 1);
-    });
-
-    test('Calls _unshiftHistoryItem() when no requests', () => {
-      element.requests = undefined;
-      const item = DataGenerator.generateHistoryObject();
-      const spy = sinon.spy(element, '_unshiftHistoryItem');
-      element._historyTypeChanged(item);
-      assert.isTrue(spy.called, 'Function is called');
-      assert.deepEqual(spy.args[0][0], item, 'Argument is set');
-    });
-
-    test('Calls _unshiftHistoryItem() when request do not match current requests', () => {
-      const item = DataGenerator.generateHistoryObject();
-      const spy = sinon.spy(element, '_unshiftHistoryItem');
-      element._historyTypeChanged(item);
-      assert.isTrue(spy.called, 'Function is called');
-      assert.deepEqual(spy.args[0][0], item, 'Argument is set');
-    });
-
-    test('Updates existing request', () => {
-      const value = 'x-test: x-value';
-      const item = Object.assign({}, element.requests[2]);
-      item.headers = value;
-      element._historyTypeChanged(item);
-      assert.lengthOf(element.requests, 10);
-      assert.equal(element.requests[2].headers, value);
-    });
-
-    test('Adds header to next item', () => {
-      const item = Object.assign({}, element.requests[2]);
-      delete item.header;
-      delete item.hasHeader;
-      element.requests[2].hasHeader = true;
-      element.requests[2].header = 'test-header';
-      element.requests[3].hasHeader = false;
-      element.requests[3].header = undefined;
-      element._historyTypeChanged(item);
-      assert.lengthOf(element.requests, 10);
-      const next = element.requests[3];
-      assert.isTrue(next.hasHeader, 'hasHeader is set');
-      assert.equal(next.header, 'test-header', 'header is set');
-    });
-
-    test('Will not update header when next item has own header', () => {
-      const item = Object.assign({}, element.requests[2]);
-      delete item.header;
-      delete item.hasHeader;
-      element.requests[2].hasHeader = true;
-      element.requests[2].header = 'test-header';
-      element.requests[3].hasHeader = true;
-      element.requests[3].header = 'other-header';
-      element._historyTypeChanged(item);
-      assert.lengthOf(element.requests, 10);
-      const next = element.requests[3];
-      assert.equal(next.header, 'other-header', 'header is mot updated');
-    });
-
-    test('Calls _appendTodaysHeader() when first item', () => {
-      const item = Object.assign({}, element.requests[0]);
-      delete item.header;
-      delete item.hasHeader;
-      delete element.requests[0].header;
-      delete element.requests[0].hasHeader;
-      element._historyTypeChanged(item);
-      const updated = element.requests[0];
-      assert.isTrue(updated.hasHeader);
-      assert.equal(updated.header, 'Today', 'header is mot updated');
-    });
-  });
-
-  suite('_appendTodaysHeader()', () => {
-    let element;
-    setup(() => {
-      element = fixture('Basic');
-    });
-
-    test('Adds header', () => {
-      const item = {};
-      element._appendTodaysHeader(item);
-      assert.equal(item.header, 'Today');
-    });
-
-    test('Adds hasHeader', () => {
-      const item = {};
-      element._appendTodaysHeader(item);
-      assert.isTrue(item.hasHeader);
-    });
-
-    test('Adds today', () => {
-      const item = {};
-      element._appendTodaysHeader(item);
-      assert.isTrue(item.today);
-    });
-  });
-
-  suite('_unshiftHistoryItem()', () => {
-    let element;
-    setup(() => {
-      element = fixture('Basic');
-      element.requests = DataGenerator.generateHistoryRequestsData({
-        requestsSize: 10
-      });
-    });
-
-    test('Calls _appendTodaysHeader()', () => {
-      const spy = sinon.spy(element, '_appendTodaysHeader');
-      const item = DataGenerator.generateHistoryObject();
-      element._unshiftHistoryItem(item);
-      assert.isTrue(spy.called);
-      assert.deepEqual(spy.args[0][0], item);
-      assert.isTrue(item.hasHeader);
-    });
-
-    test('Creates requests if not exists', () => {
-      element.requests = undefined;
-      const item = DataGenerator.generateHistoryObject();
-      element._unshiftHistoryItem(item);
-      assert.lengthOf(element.requests, 1);
-      assert.deepEqual(element.requests[0], item);
-    });
-
-    test('Adds item to the array on index 0', () => {
-      const item = DataGenerator.generateHistoryObject();
-      element._unshiftHistoryItem(item);
-      assert.lengthOf(element.requests, 11);
-      assert.deepEqual(element.requests[0], item);
-    });
-
-    test('Removes header from first item if is today', () => {
-      element.set('requests.0.header', 'test');
-      element.set('requests.0.hasHeader', true);
-      element.set('requests.0.today', true);
-      const item = DataGenerator.generateHistoryObject();
-      element._unshiftHistoryItem(item);
-      assert.isUndefined(element.requests[1].header);
-      assert.isFalse(element.requests[1].hasHeader);
     });
   });
 

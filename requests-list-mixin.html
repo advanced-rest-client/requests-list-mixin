@@ -203,7 +203,9 @@ global.ArcComponents.RequestsListMixin = Polymer.dedupingMixin((base) => {
       const request = e.detail.request;
       switch (this.type) {
         case 'history':
-          this._historyTypeChanged(request);
+          if (this._historyTypeChanged) {
+            this._historyTypeChanged(request);
+          }
           break;
         case 'saved':
           this._savedTypeChanged(request);
@@ -287,71 +289,6 @@ global.ArcComponents.RequestsListMixin = Polymer.dedupingMixin((base) => {
       this.unshift('requests', request);
     }
     /**
-     * Handles request change when type is saved or history.
-     * @param {Object} request Changed request object.
-     */
-    _historyTypeChanged(request) {
-      const t = this.type;
-      if (t !== 'history') {
-        return;
-      }
-      if (['history', 'history-requests'].indexOf(request.type) === -1) {
-        return;
-      }
-      const requests = this.requests;
-      if (!requests) {
-        this._unshiftHistoryItem(request);
-        return;
-      }
-      const id = request._id;
-      for (let i = 0, len = requests.length; i < len; i++) {
-        if (requests[i]._id === id) {
-          const old = this.requests[i];
-          const nextIndex = i + 1;
-          const next = this.requests[nextIndex];
-          if (old.hasHeader && next && !next.hasHeader) {
-            this.set(['requests', nextIndex, 'header'], old.header);
-            this.set(['requests', nextIndex, 'hasHeader'], old.hasHeader);
-          }
-          if (i === 0) {
-            this._appendTodaysHeader(request);
-          }
-          this.set(['requests', i], request);
-          return;
-        }
-      }
-      this._unshiftHistoryItem(request);
-    }
-
-    /**
-     * Appends "today" header to the item.
-     *
-     * @param {Object} item History document
-     */
-    _appendTodaysHeader(item) {
-      item.hasHeader = true;
-      item.header = 'Today';
-      item.today = true;
-    }
-    /**
-     * Adds a new history item to the top of the list.
-     * @param {Object} item A history item to add
-     */
-    _unshiftHistoryItem(item) {
-      this._appendTodaysHeader(item);
-      const firstItem = this.get('requests.0');
-      if (firstItem === undefined) {
-        this.set('requests', [item]);
-        return;
-      }
-      if (firstItem && firstItem.today) {
-        firstItem.hasHeader = false;
-        delete firstItem.header;
-        this.set('requests.0', firstItem);
-      }
-      this.unshift('requests', item);
-    }
-    /**
      * Dispatches `project-read` custom event and returns it.
      * @param {String} id Project ID to read
      * @return {CustomEvent} Disaptched custom event
@@ -384,7 +321,6 @@ global.ArcComponents.RequestsListMixin = Polymer.dedupingMixin((base) => {
         request
       });
     }
-
     /**
      * A function to read request data for a project.
      * @param {String} projectId Project ID

@@ -8,6 +8,10 @@
  *   requests-list-mixin.html
  */
 
+
+// tslint:disable:variable-name Describing an API that's defined elsewhere.
+// tslint:disable:no-any describes the API as best we are able today
+
 /// <reference path="../polymer/types/lib/utils/mixin.d.ts" />
 
 declare namespace ArcComponents {
@@ -138,27 +142,6 @@ declare namespace ArcComponents {
      * @param request Changed request object.
      */
     _savedTypeChanged(request: object|null): void;
-
-    /**
-     * Handles request change when type is saved or history.
-     *
-     * @param request Changed request object.
-     */
-    _historyTypeChanged(request: object|null): void;
-
-    /**
-     * Appends "today" header to the item.
-     *
-     * @param item History document
-     */
-    _appendTodaysHeader(item: object|null): void;
-
-    /**
-     * Adds a new history item to the top of the list.
-     *
-     * @param item A history item to add
-     */
-    _unshiftHistoryItem(item: object|null): void;
 
     /**
      * Dispatches `project-read` custom event and returns it.

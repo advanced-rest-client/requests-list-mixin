@@ -1,7 +1,7 @@
 {
   "name": "@advanced-rest-client/requests-list-mixin",
   "description": "A common function for element that handles lists of requests like history, saved or menu items",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "license": "Apache-2.0",
   "main": "requests-list-mixin.html",
   "authors": [
@@ -9,7 +9,7 @@
     "The Advanced REST client authors <arc@mulesoft.com>"
   ],
   "devDependencies": {
-    "@polymer/gen-typescript-declarations": "^1.6.0"
+    "@polymer/gen-typescript-declarations": "^1.6.1"
   },
   "private": false,
   "scripts": {
