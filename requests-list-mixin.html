@@ -445,6 +445,13 @@ global.ArcComponents.RequestsListMixin = Polymer.dedupingMixin((base) => {
         case 'compact': size = 36; break;
         default: size = 72; break;
       }
+      this._applyListStyles(size);
+    }
+    /**
+     * Applies `--paper-item-icon-width` variable.
+     * @param {Number} size Icon width in pixels.
+     */
+    _applyListStyles(size) {
       const value = `${size}px`;
       if (!window.ShadyCSS) {
         this.style.setProperty('--paper-item-icon-width', value);
