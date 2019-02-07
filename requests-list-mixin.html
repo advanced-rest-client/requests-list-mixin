@@ -124,19 +124,22 @@ global.ArcComponents.RequestsListMixin = Polymer.dedupingMixin((base) => {
      * By default the event is cancelable until `cancelable` property is set to false.
      * @param {String} type Event type
      * @param {?any} detail A detail to set
+     * @param {?Boolean} cancelable True if the event is cancelable (default value).
      * @return {CustomEvent}
      */
-    _dispatch(type, detail) {
+    _dispatch(type, detail, cancelable) {
+      if (typeof cancelable !== 'boolean') {
+        cancelable = true;
+      }
       const e = new CustomEvent(type, {
         bubbles: true,
         composed: true,
-        cancelable: true,
+        cancelable,
         detail
       });
       this.dispatchEvent(e);
       return e;
     }
-
     /**
      * Handler for `request-object-deleted` event. Removes request from the list
      * if it existed.
