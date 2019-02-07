@@ -30,19 +30,10 @@ Common styles for requests lists
       overflow: hidden;
     }
 
-    .request-list-item:focus http-method-label[method="post"] {
-      color: var(--request-list-item-selected-post-method-color, #fff);
-    }
-
     .iron-selected .request-list-item,
     .request-list-item.iron-selected {
       background-color: var(--request-list-item-selected-background-color, #E0E0E0);
       @apply --request-list-item-selected;
-    }
-
-    .iron-selected .request-list-item:focus http-method-label[method="post"],
-    .request-list-item.iron-selected:focus http-method-label[method="post"] {
-      color: var(--request-list-item-selected-focused-post-method-color, rgb(33, 150, 243));
     }
 
     :host([list-type="comfortable"]) paper-item-body,
@@ -79,9 +70,17 @@ Common styles for requests lists
       min-height: var(--request-list-item-comfortable-compact-height, 36px);
     }
 
+    :host([list-type="comfortable"]) .list-action-button {
+      height: 32px;
+    }
+
+    :host([list-type="compact"]) .list-action-button {
+      height: 24px;
+    }
+
     .history-group-header {
-      font-weight: var(--request-list-history-group-header-font-weigth, bold);
-      color: var(--request-list-history-group-header-color, rgba(0, 0, 0, 0.67));
+      font-weight: var(--request-list-item-history-group-header-font-weigth, bold);
+      color: var(--request-list-item-history-group-header-color, rgba(0, 0, 0, 0.67));
       padding: 24px 16px;
       @apply --request-list-history-group-header;
     }
@@ -97,6 +96,18 @@ Common styles for requests lists
     .select-text {
       -webkit-user-select: text;
       user-select: text;
+    }
+
+    .list-main-action {
+      @apply --action-button;
+      height: 36px;
+      font-size: 14px;
+    }
+
+    .list-secondary-action {
+      color: var(--request-list-item-secondary-action-color, var(--primary-color));
+      height: 36px;
+      font-size: 14px;
     }
     </style>
   </template>
