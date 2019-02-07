@@ -10,7 +10,7 @@ Common styles for requests lists
       --paper-item-icon-width: 72px;
     }
 
-    paper-icon-item {
+    .request-list-item {
       @apply --arc-font-menu;
       font-weight: 400;
       cursor: pointer;
@@ -23,18 +23,26 @@ Common styles for requests lists
       width: 52px;
       text-align: center;
       padding-top: 14px;
+      margin-bottom: 0;
       box-sizing: border-box;
       border-radius: 50%;
       text-overflow: ellipsis;
       overflow: hidden;
     }
 
-    paper--icon-item:focus http-method-label[method="post"] {
+    .request-list-item:focus http-method-label[method="post"] {
       color: var(--request-list-item-selected-post-method-color, #fff);
     }
 
-    .iron-selected paper-icon-item:focus http-method-label[method="post"] {
-      color: var(--request-list-item-focused-post-method-color, rgb(33, 150, 243));
+    .iron-selected .request-list-item,
+    .request-list-item.iron-selected {
+      background-color: var(--request-list-item-selected-background-color, #E0E0E0);
+      @apply --request-list-item-selected;
+    }
+
+    .iron-selected .request-list-item:focus http-method-label[method="post"],
+    .request-list-item.iron-selected:focus http-method-label[method="post"] {
+      color: var(--request-list-item-selected-focused-post-method-color, rgb(33, 150, 243));
     }
 
     :host([list-type="comfortable"]) paper-item-body,
@@ -63,12 +71,12 @@ Common styles for requests lists
       font-size: 11px;
     }
 
-    :host([list-type="comfortable"]) paper-icon-item {
-      min-height: 52px;
+    :host([list-type="comfortable"]) .request-list-item {
+      min-height: var(--request-list-item-comfortable-min-height, 52px);
     }
 
-    :host([list-type="compact"]) paper-icon-item {
-      min-height: 36px;
+    :host([list-type="compact"]) .request-list-item {
+      min-height: var(--request-list-item-comfortable-compact-height, 36px);
     }
 
     .history-group-header {
@@ -84,6 +92,11 @@ Common styles for requests lists
 
     :host([list-type="compact"]) .history-group-header {
       padding: 12px;
+    }
+
+    .select-text {
+      -webkit-user-select: text;
+      user-select: text;
     }
     </style>
   </template>
