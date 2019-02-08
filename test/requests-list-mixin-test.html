@@ -650,13 +650,12 @@
   });
 
   suite('_updateRequest()', () => {
-    test('Rejects when type is undefined', () => {
-      const item = DataGenerator.generateHistoryObject();
-      const element = fixture('Basic');
-      element.type = 'unknown';
-      return element._updateRequest(item)
-      .catch((cause) => {
-        assert.equal(cause.message, 'Unknown request type');
+    test('Throws when type is undefined', () => {
+      assert.throws(() => {
+        const item = DataGenerator.generateHistoryObject();
+        const element = fixture('Basic');
+        element.type = 'unknown';
+        element._updateRequest(item);
       });
     });
 
@@ -1069,6 +1068,225 @@
       test('_hasTwoLines is computed', () => {
         const element = fixture('Compact');
         assert.isFalse(element._hasTwoLines);
+      });
+    });
+  });
+
+  suite('_dispatchExportData()', () => {
+    let element;
+    let opts;
+    let requests;
+    setup(() => {
+      element = fixture('Basic');
+      opts = {
+        options: {options: true},
+        providerOptions: {providerOptions: true}
+      };
+      requests = [{
+        id: 'test-id'
+      }];
+    });
+
+    test('Calls _dispatch()', () => {
+      const spy = sinon.spy(element, '_dispatch');
+      element._dispatchExportData(requests, opts);
+      assert.isTrue(spy.called);
+    });
+
+    test('Returns the event', () => {
+      const e = element._dispatchExportData(requests, opts);
+      assert.typeOf(e, 'customevent');
+    });
+
+    test('Event has type', () => {
+      const e = element._dispatchExportData(requests, opts);
+      assert.equal(e.type, 'arc-data-export');
+    });
+
+    test('Event has detail', () => {
+      const e = element._dispatchExportData(requests, opts);
+      assert.typeOf(e.detail, 'object');
+    });
+
+    test('Detail has options', () => {
+      const e = element._dispatchExportData(requests, opts);
+      assert.deepEqual(e.detail.options, opts.options);
+    });
+
+    test('Detail has providerOptions', () => {
+      const e = element._dispatchExportData(requests, opts);
+      assert.deepEqual(e.detail.providerOptions, opts.providerOptions);
+    });
+
+    test('Detail has history', () => {
+      const e = element._dispatchExportData(requests, opts);
+      assert.deepEqual(e.detail.data.history, requests);
+    });
+
+    test('Detail has saved', () => {
+      element.type = 'saved';
+      const e = element._dispatchExportData(requests, opts);
+      assert.deepEqual(e.detail.data.saved, requests);
+    });
+
+    test('Detail has saved (project type)', () => {
+      element.type = 'project';
+      const e = element._dispatchExportData(requests, opts);
+      assert.deepEqual(e.detail.data.saved, requests);
+    });
+
+    test('Detail has projects (project type)', () => {
+      element.type = 'project';
+      element.project = {testProject: true};
+      const e = element._dispatchExportData(requests, opts);
+      assert.deepEqual(e.detail.data.projects, [element.project]);
+    });
+
+    test('Throws when "type" is not set', () => {
+      element.type = undefined;
+      assert.throws(() => {
+        element._dispatchExportData(requests, opts);
+      }, 'The "type" property is not set.');
+    });
+  });
+
+  suite('_openRequest()', () => {
+    let element;
+    setup(() => {
+      element = fixture('Basic');
+    });
+
+    test('Calls _dispatch()', () => {
+      const spy = sinon.spy(element, '_dispatch');
+      element._openRequest('test-id');
+      assert.isTrue(spy.called);
+    });
+
+    test('Returns the event', () => {
+      const e = element._openRequest('test-id');
+      assert.typeOf(e, 'customevent');
+    });
+
+    test('Event has type', () => {
+      const e = element._openRequest('test-id');
+      assert.equal(e.type, 'navigate');
+    });
+
+    test('Event has detail', () => {
+      const e = element._openRequest('test-id');
+      assert.typeOf(e.detail, 'object');
+    });
+
+    test('Detail has base', () => {
+      const e = element._openRequest('test-id');
+      assert.equal(e.detail.base, 'request');
+    });
+
+    test('Detail has type', () => {
+      const e = element._openRequest('test-id');
+      assert.equal(e.detail.type, element.type);
+    });
+
+    test('Sets type to saved when project', () => {
+      element.type = 'project';
+      const e = element._openRequest('test-id');
+      assert.equal(e.detail.type, 'saved');
+    });
+
+    test('Detail has id', () => {
+      const e = element._openRequest('test-id');
+      assert.equal(e.detail.id, 'test-id');
+    });
+
+    test('Throws when "type" is not set', () => {
+      element.type = undefined;
+      assert.throws(() => {
+        element._openRequest('test-id');
+      }, 'The "type" property is not set.');
+    });
+  });
+
+  suite('_validateType()', () => {
+    let element;
+    setup(() => {
+      element = fixture('Basic');
+    });
+
+    test('Passes validation for project type', () => {
+      element._validateType('project');
+    });
+
+    test('Passes validation for saved type', () => {
+      element._validateType('saved');
+    });
+
+    test('Passes validation for history type', () => {
+      element._validateType('history');
+    });
+
+    test('Throws otherwise type', () => {
+      assert.throws(() => {
+        element._validateType('other');
+      }, 'The "type" property is not set.');
+    });
+  });
+
+  suite('readProjectRequests()', () => {
+    let element;
+    setup(() => {
+      element = fixture('Basic');
+    });
+
+    test('Rejects when project read event is not handled', () => {
+      return element.readProjectRequests('test')
+      .then(() => {
+        throw new Error('Should not resolve');
+      })
+      .catch((cause) => {
+        assert.equal(cause.message, 'project-read event not handled');
+      });
+    });
+
+    test('Rejects when requests read event is not handled', () => {
+      element.addEventListener('project-read', function f(e) {
+        element.removeEventListener('project-read', f);
+        e.preventDefault();
+        e.detail.result = Promise.resolve({
+          id: 'test-project',
+          requests: ['test-request']
+        });
+      });
+      return element.readProjectRequests('test')
+      .then(() => {
+        throw new Error('Should not resolve');
+      })
+      .catch((cause) => {
+        assert.equal(cause.message, 'request-project-list event not handled');
+      });
+    });
+
+    test('Resolves to requests list', () => {
+      element.addEventListener('project-read', function f(e) {
+        element.removeEventListener('project-read', f);
+        e.preventDefault();
+        e.detail.result = Promise.resolve({
+          id: 'test-project',
+          requests: ['test-request']
+        });
+      });
+
+      element.addEventListener('request-project-list', function f2(e) {
+        element.removeEventListener('request-project-list', f2);
+        e.preventDefault();
+        e.detail.result = Promise.resolve([{
+          id: 'test-request'
+        }]);
+      });
+      return element.readProjectRequests('test')
+      .then((result) => {
+        assert.deepEqual(result, [{
+          id: 'test-request'
+        }]);
       });
     });
   });

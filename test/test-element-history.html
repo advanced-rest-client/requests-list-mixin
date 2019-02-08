@@ -19,6 +19,11 @@
     static get is() {
       return 'test-element-history';
     }
+
+    connectedCallback() {
+      super.connectedCallback();
+      this.type = 'history';
+    }
   }
   window.customElements.define(TestElementHistory.is, TestElementHistory);
   </script>
