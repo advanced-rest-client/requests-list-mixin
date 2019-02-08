@@ -402,6 +402,7 @@ global.ArcComponents.RequestsListMixin = Polymer.dedupingMixin((base) => {
      * @return {Promise} Promise resolved when the request object is updated.
      */
     _updateRequest(request) {
+      this._validateType(this.type);
       let type;
       switch (this.type) {
         case 'saved':
@@ -411,9 +412,6 @@ global.ArcComponents.RequestsListMixin = Polymer.dedupingMixin((base) => {
         case 'history':
           type = 'history';
           break;
-      }
-      if (!type) {
-        return Promise.reject(new Error('Unknown request type'));
       }
       const e = this._dispatchRequestChanged(type, request);
       if (!e.defaultPrevented) {
@@ -553,6 +551,7 @@ global.ArcComponents.RequestsListMixin = Polymer.dedupingMixin((base) => {
      * @return {CustomEvent}
      */
     _dispatchExportData(requests, opts) {
+      this._validateType(this.type);
       const data = {};
       switch (this.type) {
         case 'history': data.history = requests; break;
@@ -561,20 +560,38 @@ global.ArcComponents.RequestsListMixin = Polymer.dedupingMixin((base) => {
           data.projects = [this.project];
           break;
         case 'saved': data.saved = requests; break;
-        default: throw new Error('Unknown type.');
       }
-      const e = new CustomEvent('arc-data-export', {
-        cancelable: true,
-        composed: true,
-        bubbles: true,
-        detail: {
-          options: opts.options,
-          providerOptions: opts.providerOptions,
-          data
-        }
+      return this._dispatch('arc-data-export', {
+        options: opts.options,
+        providerOptions: opts.providerOptions,
+        data
       });
-      this.dispatchEvent(e);
-      return e;
+    }
+    /**
+     * Dispatches navigate event to open a request
+     * @param {[type]} id [description]
+     * @return {[type]} [description]
+     */
+    _openRequest(id) {
+      let type = this.type;
+      this._validateType(type);
+      if (type === 'project') {
+        type = 'saved';
+      }
+      return this._dispatch('navigate', {
+        base: 'request',
+        type,
+        id
+      });
+    }
+    /**
+     * Throws an error when type is not set.
+     * @param {String} type Passed to the function type
+     */
+    _validateType(type) {
+      if (['project', 'history', 'saved'].indexOf(type) === -1) {
+        throw new TypeError('The "type" property is not set.');
+      }
     }
   }
   return RLmixin;
