@@ -80,7 +80,7 @@ declare namespace ArcComponents {
 
     /**
      * A project object associated with requests.
-     * This is only valid when `type` is project. It is set automatically
+     * This is only valid when `type` is set to `project`. It is set automatically
      * when `readProjectRequests()` is called.
      */
     project: object|null|undefined;
@@ -93,8 +93,9 @@ declare namespace ArcComponents {
      *
      * @param type Event type
      * @param detail A detail to set
+     * @param cancelable True if the event is cancelable (default value).
      */
-    _dispatch(type: String|null, detail: any|null): CustomEvent|null;
+    _dispatch(type: String|null, detail: any|null, cancelable: Boolean|null): CustomEvent|null;
 
     /**
      * Handler for `request-object-deleted` event. Removes request from the list
@@ -212,6 +213,14 @@ declare namespace ArcComponents {
     _updateListStyles(type: String|null): void;
 
     /**
+     * Applies `--paper-item-icon-width` variable.
+     *
+     * @param size Icon width in pixels.
+     * @param target The target to apply styling. Default to this.
+     */
+    _applyListStyles(size: Number|null, target: Element|null): void;
+
+    /**
      * Stores current order of requests in the project.
      * This shouls be only called wshen `project` property is set.
      */
@@ -236,7 +245,31 @@ declare namespace ArcComponents {
 
     /**
      * Handler for the `project-object-changed` event.
+     *
+     * @returns False if the event was not handled.
      */
-    _projectChanged(e: CustomEvent|null): void;
+    _projectChanged(e: CustomEvent|null): Boolean|null;
+
+    /**
+     * Dispatches `export-data` event and returns it.
+     *
+     * @param requests List of request to export.
+     */
+    _dispatchExportData(requests: Array<object|null>|null, opts: object|null): CustomEvent|null;
+
+    /**
+     * Dispatches navigate event to open a request
+     *
+     * @param id [description]
+     * @returns [description]
+     */
+    _openRequest(id: any): any;
+
+    /**
+     * Throws an error when type is not set.
+     *
+     * @param type Passed to the function type
+     */
+    _validateType(type: String|null): void;
   }
 }

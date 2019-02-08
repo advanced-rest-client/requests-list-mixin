@@ -92,7 +92,7 @@ global.ArcComponents.RequestsListMixin = Polymer.dedupingMixin((base) => {
         _hasTwoLines: {value: true, type: Boolean, computed: '_computeHasTwoLines(listType)'},
         /**
          * A project object associated with requests.
-         * This is only valid when `type` is project. It is set automatically
+         * This is only valid when `type` is set to `project`. It is set automatically
          * when `readProjectRequests()` is called.
          */
         project: Object
@@ -124,19 +124,22 @@ global.ArcComponents.RequestsListMixin = Polymer.dedupingMixin((base) => {
      * By default the event is cancelable until `cancelable` property is set to false.
      * @param {String} type Event type
      * @param {?any} detail A detail to set
+     * @param {?Boolean} cancelable True if the event is cancelable (default value).
      * @return {CustomEvent}
      */
-    _dispatch(type, detail) {
+    _dispatch(type, detail, cancelable) {
+      if (typeof cancelable !== 'boolean') {
+        cancelable = true;
+      }
       const e = new CustomEvent(type, {
         bubbles: true,
         composed: true,
-        cancelable: true,
+        cancelable,
         detail
       });
       this.dispatchEvent(e);
       return e;
     }
-
     /**
      * Handler for `request-object-deleted` event. Removes request from the list
      * if it existed.
@@ -399,6 +402,7 @@ global.ArcComponents.RequestsListMixin = Polymer.dedupingMixin((base) => {
      * @return {Promise} Promise resolved when the request object is updated.
      */
     _updateRequest(request) {
+      this._validateType(this.type);
       let type;
       switch (this.type) {
         case 'saved':
@@ -408,9 +412,6 @@ global.ArcComponents.RequestsListMixin = Polymer.dedupingMixin((base) => {
         case 'history':
           type = 'history';
           break;
-      }
-      if (!type) {
-        return Promise.reject(new Error('Unknown request type'));
       }
       const e = this._dispatchRequestChanged(type, request);
       if (!e.defaultPrevented) {
@@ -450,18 +451,20 @@ global.ArcComponents.RequestsListMixin = Polymer.dedupingMixin((base) => {
     /**
      * Applies `--paper-item-icon-width` variable.
      * @param {Number} size Icon width in pixels.
+     * @param {?Element} target The target to apply styling. Default to this.
      */
-    _applyListStyles(size) {
+    _applyListStyles(size, target) {
+      target = target || this;
       const value = `${size}px`;
       if (!window.ShadyCSS) {
-        this.style.setProperty('--paper-item-icon-width', value);
+        target.style.setProperty('--paper-item-icon-width', value);
       } else {
-        this.updateStyles({
+        target.updateStyles({
           '--paper-item-icon-width': value
         });
       }
-      if (this.notifyResize) {
-        this.notifyResize();
+      if (target.notifyResize) {
+        target.notifyResize();
       }
     }
     /**
@@ -526,17 +529,69 @@ global.ArcComponents.RequestsListMixin = Polymer.dedupingMixin((base) => {
     /**
      * Handler for the `project-object-changed` event.
      * @param {CustomEvent} e
+     * @return {Boolean} False if the event was not handled.
      */
     _projectChanged(e) {
       if (e.cancelable || this.type !== 'project' || !this.project ||
         e.composedPath()[0] === this) {
-        return;
+        return false;
       }
       const {project} = e.detail;
       if (this.project._id !== project._id) {
-        return;
+        return false;
       }
       this.project = project;
+      return true;
+    }
+
+    /**
+     * Dispatches `export-data` event and returns it.
+     * @param {Array<Object>} requests List of request to export.
+     * @param {Object} opts
+     * @return {CustomEvent}
+     */
+    _dispatchExportData(requests, opts) {
+      this._validateType(this.type);
+      const data = {};
+      switch (this.type) {
+        case 'history': data.history = requests; break;
+        case 'project':
+          data.saved = requests;
+          data.projects = [this.project];
+          break;
+        case 'saved': data.saved = requests; break;
+      }
+      return this._dispatch('arc-data-export', {
+        options: opts.options,
+        providerOptions: opts.providerOptions,
+        data
+      });
+    }
+    /**
+     * Dispatches navigate event to open a request
+     * @param {[type]} id [description]
+     * @return {[type]} [description]
+     */
+    _openRequest(id) {
+      let type = this.type;
+      this._validateType(type);
+      if (type === 'project') {
+        type = 'saved';
+      }
+      return this._dispatch('navigate', {
+        base: 'request',
+        type,
+        id
+      });
+    }
+    /**
+     * Throws an error when type is not set.
+     * @param {String} type Passed to the function type
+     */
+    _validateType(type) {
+      if (['project', 'history', 'saved'].indexOf(type) === -1) {
+        throw new TypeError('The "type" property is not set.');
+      }
     }
   }
   return RLmixin;

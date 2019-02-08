@@ -19,6 +19,11 @@
     static get is() {
       return 'test-element-saved';
     }
+
+    connectedCallback() {
+      super.connectedCallback();
+      this.type = 'saved';
+    }
   }
   window.customElements.define(TestElementSaved.is, TestElementSaved);
   </script>
