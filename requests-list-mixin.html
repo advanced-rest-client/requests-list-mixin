@@ -545,6 +545,37 @@ global.ArcComponents.RequestsListMixin = Polymer.dedupingMixin((base) => {
       this.project = project;
       return true;
     }
+
+    /**
+     * Dispatches `export-data` event and returns it.
+     * @param {Array<Object>} requests List of request to export.
+     * @param {Object} opts
+     * @return {CustomEvent}
+     */
+    _dispatchExportData(requests, opts) {
+      const data = {};
+      switch (this.type) {
+        case 'history': data.history = requests; break;
+        case 'project':
+          data.saved = requests;
+          data.projects = [this.project];
+          break;
+        case 'saved': data.saved = requests; break;
+        default: throw new Error('Unknown type.');
+      }
+      const e = new CustomEvent('arc-data-export', {
+        cancelable: true,
+        composed: true,
+        bubbles: true,
+        detail: {
+          options: opts.options,
+          providerOptions: opts.providerOptions,
+          data
+        }
+      });
+      this.dispatchEvent(e);
+      return e;
+    }
   }
   return RLmixin;
 });
