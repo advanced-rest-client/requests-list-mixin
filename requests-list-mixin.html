@@ -546,9 +546,45 @@ global.ArcComponents.RequestsListMixin = Polymer.dedupingMixin((base) => {
         return false;
       }
       this.project = project;
+      this._updateProjectOrder(project);
       return true;
     }
-
+    /**
+     * Updates requests order when project changed.
+     * It reorder requests array for changed project order. It won't change
+     * requests array when order is the same. It also won't change order when
+     * request list is different that project's requests list.
+     * @param {Object} project Changed project
+     * @return {Boolean} True when order has changed
+     */
+    _updateProjectOrder(project) {
+      const requests = this.requests;
+      if (!requests || !project.requests) {
+        return false;
+      }
+      if (requests.length !== project.requests.length) {
+        // request is being added or removed
+        return false;
+      }
+      const newOrder = [];
+      let changed = false;
+      for (let i = 0, len = project.requests.length; i < len; i++) {
+        const id = project.requests[i];
+        const rPos = requests.findIndex((item) => item._id === id);
+        if (rPos === -1) {
+          // unknown state, better quit now
+          return false;
+        }
+        newOrder[i] = requests[rPos];
+        if (i !== rPos) {
+          changed = true;
+        }
+      }
+      if (changed) {
+        this.set('requests', newOrder);
+      }
+      return changed;
+    }
     /**
      * Dispatches `export-data` event and returns it.
      * @param {Array<Object>} requests List of request to export.

@@ -251,6 +251,17 @@ declare namespace ArcComponents {
     _projectChanged(e: CustomEvent|null): Boolean|null;
 
     /**
+     * Updates requests order when project changed.
+     * It reorder requests array for changed project order. It won't change
+     * requests array when order is the same. It also won't change order when
+     * request list is different that project's requests list.
+     *
+     * @param project Changed project
+     * @returns True when order has changed
+     */
+    _updateProjectOrder(project: object|null): Boolean|null;
+
+    /**
      * Dispatches `export-data` event and returns it.
      *
      * @param requests List of request to export.

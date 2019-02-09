@@ -845,6 +845,14 @@
       assert.equal(element.project.name, 'other-name');
     });
 
+    test('Calls _updateProjectOrder() with an argument', () => {
+      const item = Object.assign({}, element.project);
+      item.name = 'other-name';
+      const spy = sinon.spy(element, '_updateProjectOrder');
+      fire(item);
+      assert.deepEqual(spy.args[0][0], item);
+    });
+
     test('Ignores event when event is cancelable', () => {
       const item = Object.assign({}, element.project);
       item.name = 'other-name';
@@ -880,6 +888,64 @@
       item._id = 'other-id';
       fire(item);
       assert.notEqual(element.project._id, 'other-id');
+    });
+  });
+
+  suite('_updateProjectOrder()', () => {
+    function setupRequests(element) {
+      const requests = [];
+      for (let i = 0; i < 5; i++) {
+        const request = DataGenerator.generateSavedItem({});
+        request.projects = [element.project._id];
+        element.project.requests.push(request._id);
+        requests.push(request);
+      }
+      element.requests = requests;
+    }
+
+    let element;
+    setup(() => {
+      element = fixture('BasicSaved');
+      element.project = DataGenerator.createProjectObject();
+      element.type = 'project';
+      element.project.requests = [];
+      setupRequests(element);
+    });
+
+    test('Ignores call when no requests', () => {
+      element.requests = undefined;
+      const result = element._updateProjectOrder(element.project);
+      assert.isFalse(result);
+    });
+
+    test('Ignores call when no requests on project', () => {
+      element.project.requests = undefined;
+      const result = element._updateProjectOrder(element.project);
+      assert.isFalse(result);
+    });
+
+    test('Ignores call when requests lists are different size', () => {
+      element.project.requests.splice(0, 1);
+      const result = element._updateProjectOrder(element.project);
+      assert.isFalse(result);
+    });
+
+    test('Ignores call when request cannot be find', () => {
+      element.project.requests[0] = 'test-id';
+      const result = element._updateProjectOrder(element.project);
+      assert.isFalse(result);
+    });
+
+    test('Ignores call when request are equal', () => {
+      const result = element._updateProjectOrder(element.project);
+      assert.isFalse(result);
+    });
+
+    test('Updates list position', () => {
+      const removed = element.project.requests.splice(0, 1);
+      element.project.requests.splice(2, 0, removed[0]);
+      const result = element._updateProjectOrder(element.project);
+      assert.isTrue(result);
     });
   });
 
