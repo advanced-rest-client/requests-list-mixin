@@ -54,3 +54,16 @@
 
 
 
+## [2.0.2](https://github.com/advanced-rest-client/requests-list-mixin/compare/2.0.0...2.0.2) (2019-02-09)
+
+
+### Fix
+
+* Project request now will be inserted at position. ([00e93565a103f0184933c10aebec1b4736cc7d4a](https://github.com/advanced-rest-client/requests-list-mixin/commit/00e93565a103f0184933c10aebec1b4736cc7d4a))
+
+### New
+
+* Adding re-ordering requests in project on change ([2513caabf4864b75c35799bc62be92eb8951779c](https://github.com/advanced-rest-client/requests-list-mixin/commit/2513caabf4864b75c35799bc62be92eb8951779c))
+
+
+
