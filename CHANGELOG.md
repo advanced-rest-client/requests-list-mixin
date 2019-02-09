@@ -45,3 +45,12 @@
 
 
 
+## [2.0.1](https://github.com/advanced-rest-client/requests-list-mixin/compare/2.0.0...2.0.1) (2019-02-09)
+
+
+### Fix
+
+* Project request now will be inserted at position. ([00e93565a103f0184933c10aebec1b4736cc7d4a](https://github.com/advanced-rest-client/requests-list-mixin/commit/00e93565a103f0184933c10aebec1b4736cc7d4a))
+
+
+
