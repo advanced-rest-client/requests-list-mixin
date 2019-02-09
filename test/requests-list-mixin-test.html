@@ -463,6 +463,18 @@
       assert.lengthOf(element.requests, 11);
     });
 
+    test('Adds new item to requests array at position', () => {
+      const item = genProjectItem();
+      const project = DataGenerator.createProjectObject();
+      project._id = projectId;
+      project.requests = element.requests.map((item) => item._id);
+      project.requests.splice(1, 0, item._id);
+      element.project = project;
+      element._projectTypeChanged(item);
+      assert.lengthOf(element.requests, 11);
+      assert.deepEqual(element.requests[1], item);
+    });
+
     test('Updates existing item', () => {
       const item = Object.assign({}, element.requests[2]);
       item.name = 'test-name';

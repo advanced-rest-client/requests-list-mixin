@@ -245,7 +245,12 @@ global.ArcComponents.RequestsListMixin = Polymer.dedupingMixin((base) => {
         }
       }
       if (this._isProjectRequest(request)) {
-        this.push(`requests`, request);
+        if (this.project) {
+          const index = this.project.requests.indexOf(request._id);
+          this.splice('requests', index, 0, request);
+        } else {
+          this.push('requests', request);
+        }
       }
     }
     /**
