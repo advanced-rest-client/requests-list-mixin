@@ -5,14 +5,14 @@
  *   https://github.com/Polymer/tools/tree/master/packages/gen-typescript-declarations
  *
  * To modify these typings, edit the source file(s):
- *   requests-list-mixin.html
+ *   requests-list-mixin.js
  */
 
 
 // tslint:disable:variable-name Describing an API that's defined elsewhere.
 // tslint:disable:no-any describes the API as best we are able today
 
-/// <reference path="../polymer/types/lib/utils/mixin.d.ts" />
+export {RequestsListMixin};
 
 declare namespace ArcComponents {
 
@@ -284,3 +284,5 @@ declare namespace ArcComponents {
     _validateType(type: String|null): void;
   }
 }
+
+export {RequestsListMixinConstructor};

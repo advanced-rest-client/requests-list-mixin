@@ -4,12 +4,13 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, minimum-scale=1, initial-scale=1, user-scalable=yes">
   <title>requests-list-mixin test</title>
-  <script src="../../webcomponentsjs/webcomponents-loader.js"></script>
-  <script src="../../web-component-tester/browser.js"></script>
-  <link rel="import" href="../../arc-data-generator/arc-data-generator.html">
-  <script src="../../chance/dist/chance.min.js"></script>
-  <link rel="import" href="test-element-history.html">
-  <link rel="import" href="test-element-saved.html">
+
+  <script src="../../../@webcomponents/webcomponentsjs/webcomponents-loader.js"></script>
+  <script src="../../../@polymer/test-fixture/test-fixture.js"></script>
+  <script src="../../../mocha/mocha.js"></script>
+  <script src="../../../chai/chai.js"></script>
+  <script src="../../../wct-mocha/wct-mocha.js"></script>
+
 </head>
 <body>
   <test-fixture id="Basic">
@@ -48,8 +49,11 @@
     </template>
   </test-fixture>
 
-  <script>
-  /* global DataGenerator */
+  <script type="module">
+  import {DataGenerator} from '../../../arc-data-generator/arc-data-generator.js';
+  import './test-element-history.js';
+  import './test-element-saved.js';
+  
   suite('hasRequests property', () => {
     let element;
     setup(() => {

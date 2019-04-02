@@ -1,9 +1,6 @@
-<link rel="import" href="../polymer/polymer-element.html">
-
-<!--
-Common styles for requests lists
--->
-<dom-module id="requests-list-styles">
+import '../../@polymer/polymer/polymer-element.js';
+const $documentContainer = document.createElement('template');
+$documentContainer.innerHTML = `<dom-module id="requests-list-styles">
   <template>
     <style>
     :host {
@@ -111,4 +108,6 @@ Common styles for requests lists
     }
     </style>
   </template>
-</dom-module>
+</dom-module>`;
+
+document.head.appendChild($documentContainer.content);
