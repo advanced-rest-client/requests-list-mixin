@@ -1,8 +1,7 @@
-import {PolymerElement} from '../../../@polymer/polymer/polymer-element.js';
-import {SavedListMixin} from '../../../saved-list-mixin/saved-list-mixin.js';
-import {RequestsListMixin} from '../requests-list-mixin.js';
-import '../requests-list-styles.js';
-import {html} from '../../../@polymer/polymer/lib/utils/html-tag.js';
+import { LitElement, html } from 'lit-element';
+import { SavedListMixin } from '@advanced-rest-client/saved-list-mixin/saved-list-mixin.js';
+import { RequestsListMixin } from '../requests-list-mixin.js';
+import styles from '../requests-list-styles.js';
 /**
  * @customElement
  * @polymer
@@ -10,20 +9,19 @@ import {html} from '../../../@polymer/polymer/lib/utils/html-tag.js';
  * @appliesMixin RequestsListMixin
  * @appliesMixin SavedListMixin
  */
-class TestElementSaved extends RequestsListMixin(SavedListMixin(PolymerElement)) {
-  static get template() {
-    return html`
-    <style include="requests-list-styles"></style>
-`;
+class TestElementSaved extends RequestsListMixin(SavedListMixin(LitElement)) {
+  static get styles() {
+    return styles;
   }
-
-  static get is() {
-    return 'test-element-saved';
+  render() {
+    return html`${this.modelTemplate}`;
   }
 
   connectedCallback() {
-    super.connectedCallback();
+    if (super.connectedCallback) {
+      super.connectedCallback();
+    }
     this.type = 'saved';
   }
 }
-window.customElements.define(TestElementSaved.is, TestElementSaved);
+window.customElements.define('test-element-saved', TestElementSaved);

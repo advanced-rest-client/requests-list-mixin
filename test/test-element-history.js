@@ -1,29 +1,26 @@
-import {PolymerElement} from '../../../@polymer/polymer/polymer-element.js';
-import {HistoryListMixin} from '../../../history-list-mixin/history-list-mixin.js';
-import {RequestsListMixin} from '../requests-list-mixin.js';
-import '../requests-list-styles.js';
-import {html} from '../../../@polymer/polymer/lib/utils/html-tag.js';
+import { LitElement, html } from 'lit-element';
+import { HistoryListMixin } from '@advanced-rest-client/history-list-mixin/history-list-mixin.js';
+import { RequestsListMixin } from '../requests-list-mixin.js';
+import styles from '../requests-list-styles.js';
 /**
  * @customElement
- * @polymer
  * @demo demo/index.html
  * @appliesMixin RequestsListMixin
  * @appliesMixin HistoryListMixin
  */
-class TestElementHistory extends RequestsListMixin(HistoryListMixin(PolymerElement)) {
-  static get template() {
-    return html`
-    <style include="requests-list-styles"></style>
-`;
+class TestElementHistory extends RequestsListMixin(HistoryListMixin(LitElement)) {
+  static get styles() {
+    return styles;
   }
-
-  static get is() {
-    return 'test-element-history';
+  render() {
+    return html`${this.modelTemplate}`;
   }
 
   connectedCallback() {
-    super.connectedCallback();
+    if (super.connectedCallback) {
+      super.connectedCallback();
+    }
     this.type = 'history';
   }
 }
-window.customElements.define(TestElementHistory.is, TestElementHistory);
+window.customElements.define('test-element-history', TestElementHistory);

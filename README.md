@@ -6,7 +6,9 @@
 
 # requests-list-mixin
 
-A common function for element that handles lists of requests like history, saved or menu items.
+A common function for element that handles lists of requests like history, saved or menu items for Advanced REST Client.
+
+The mixin is commonly used with `requests-list-mixin/history-list-mixin` and `requests-list-mixin/saved-list-mixin`.
 
 ### API components
 
@@ -19,34 +21,49 @@ This components is a part of [API components ecosystem](https://elements.advance
 npm install --save @advanced-rest-client/requests-list-mixin
 ```
 
-### In a Polymer 3 element
+### In a LitElement
 
 ```js
-import {PolymerElement, html} from '@polymer/polymer';
-import {HistoryListMixin} from '@advanced-rest-client/requests-list-mixin/requests-list-mixin.js';
+import { LitElement, html } from 'lit-element';
+import { RequestsListMixin } from '@advanced-rest-client/requests-list-mixin/requests-list-mixin.js';
+import styles from '@advanced-rest-client/requests-list-mixin/requests-list-styles.js';
 
-class SampleElement extends HistoryListMixin(PolymerElement) {
+class SampleElement extends RequestsListMixin(LitElement) {
+  static get styles() {
+    return styles;
+  }
+  
+  render() {
+    return html`
+      ${this.modelTemplate}
+      ${(this.requests || []).map((request) => html`...`)}return html`${this.modelTemplate}`;
+    `;
+  }
+
+  connectedCallback() {
+    if (super.connectedCallback) {
+      super.connectedCallback();
+    }
+    this.type = 'history';
+  }
 }
 customElements.define('sample-element', SampleElement);
 ```
 
-### Installation
+## Development
 
 ```sh
 git clone https://github.com/advanced-rest-client/requests-list-mixin
-cd api-url-editor
+cd requests-list-mixin
 npm install
-npm install -g polymer-cli
-```
-
-### Running the demo locally
-
-```sh
-polymer serve --npm
-open http://127.0.0.1:<port>/demo/
 ```
 
 ### Running the tests
+
 ```sh
-polymer test --npm
+npm test
 ```
+
+## API components
+
+This components is a part of [API components ecosystem](https://elements.advancedrestclient.com/)
