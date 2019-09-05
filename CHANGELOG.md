@@ -67,3 +67,7 @@
 
 
 
+# [3.0.0](https://github.com/advanced-rest-client/requests-list-mixin/compare/2.0.0...3.0.0) (2019-09-05)
+
+
+
