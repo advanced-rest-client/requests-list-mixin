@@ -27,46 +27,46 @@ http-method-label {
   background-color: var(--request-list-item-selected-background-color, #E0E0E0);
 }
 
-:host([list-type="comfortable"]) paper-item-body,
-:host([list-type="compact"]) paper-item-body {
+:host([listtype="comfortable"]) anypoint-item-body,
+:host([listtype="compact"]) anypoint-item-body {
   display: flex;
   flex-direction: row;
   justify-content: flex-start;
   align-items: center;
 }
 
-:host([list-type="comfortable"]) [secondary],
-:host([list-type="compact"]) [secondary] {
+:host([listtype="comfortable"]) [secondary],
+:host([listtype="compact"]) [secondary] {
   margin-left: 8px;
 }
 
-:host([list-type="comfortable"]) http-method-label {
+:host([listtype="comfortable"]) http-method-label {
   height: 40px;
   width: 40px;
   padding-top: 8px;
   font-size: 13px;
 }
 
-:host([list-type="compact"]) http-method-label {
+:host([listtype="compact"]) http-method-label {
   height: 28px;
   width: 28px;
   padding-top: 4px;
   font-size: 11px;
 }
 
-:host([list-type="comfortable"]) .request-list-item {
+:host([listtype="comfortable"]) .request-list-item {
   min-height: var(--request-list-item-comfortable-min-height, 52px);
 }
 
-:host([list-type="compact"]) .request-list-item {
+:host([listtype="compact"]) .request-list-item {
   min-height: var(--request-list-item-comfortable-compact-height, 36px);
 }
 
-:host([list-type="comfortable"]) .list-action-button {
+:host([listtype="comfortable"]) .list-action-button {
   height: 32px;
 }
 
-:host([list-type="compact"]) .list-action-button {
+:host([listtype="compact"]) .list-action-button {
   height: 24px;
 }
 
@@ -76,11 +76,11 @@ http-method-label {
   padding: 24px 16px;
 }
 
-:host([list-type="comfortable"]) .history-group-header {
+:host([listtype="comfortable"]) .history-group-header {
   padding: 16px;
 }
 
-:host([list-type="compact"]) .history-group-header {
+:host([listtype="compact"]) .history-group-header {
   padding: 12px;
 }
 
