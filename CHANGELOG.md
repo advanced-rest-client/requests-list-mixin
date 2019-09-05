@@ -71,3 +71,13 @@
 
 
 
+## [3.0.1](https://github.com/advanced-rest-client/requests-list-mixin/compare/2.0.0...3.0.1) (2019-09-05)
+
+
+### Bug Fixes
+
+* fixing styles for anypoint components ([61d5dc5](https://github.com/advanced-rest-client/requests-list-mixin/commit/61d5dc5))
+* remocing ShadyCss ([caf2ea7](https://github.com/advanced-rest-client/requests-list-mixin/commit/caf2ea7))
+
+
+
