@@ -460,13 +460,7 @@ export const RequestsListMixin = (base) => class extends base {
   _applyListStyles(size, target) {
     target = target || this;
     const value = `${size}px`;
-    if (!window.ShadyCSS) {
-      target.style.setProperty('--anypoint-item-icon-width', value);
-    } else {
-      target.updateStyles({
-        '--anypoint-item-icon-width': value
-      });
-    }
+    target.style.setProperty('--anypoint-item-icon-width', value);
     if (target.notifyResize) {
       target.notifyResize();
     }

@@ -872,26 +872,16 @@ describe('RequestsListMixin', function() {
 
     describe('Default list type', () => {
       it(`Icon width is ${iconWidths[0]} for default list style`, async () => {
-        let style;
         const element = await defaultListFixture();
         await aTimeout();
-        if (window.ShadyCSS) {
-          style = window.ShadyCSS.getComputedStyleValue(element, iconWidthProperty);
-        } else {
-          style = getComputedStyle(element).getPropertyValue(iconWidthProperty);
-        }
+        const style = getComputedStyle(element).getPropertyValue(iconWidthProperty);
         assert.equal(style.trim(), iconWidths[0]);
       });
 
       it(`Icon width is ${iconWidths[0]} for inital list style`, async () => {
         const element = await basicFixture();
         await aTimeout();
-        let style;
-        if (window.ShadyCSS) {
-          style = window.ShadyCSS.getComputedStyleValue(element, iconWidthProperty);
-        } else {
-          style = getComputedStyle(element).getPropertyValue(iconWidthProperty);
-        }
+        const style = getComputedStyle(element).getPropertyValue(iconWidthProperty);
         assert.equal(style.trim(), iconWidths[0]);
       });
 
@@ -922,12 +912,7 @@ describe('RequestsListMixin', function() {
       });
 
       it('Icon width is ' + iconWidths[1], () => {
-        let style;
-        if (window.ShadyCSS) {
-          style = window.ShadyCSS.getComputedStyleValue(element, iconWidthProperty);
-        } else {
-          style = getComputedStyle(element).getPropertyValue(iconWidthProperty);
-        }
+        const style = getComputedStyle(element).getPropertyValue(iconWidthProperty);
         assert.equal(style, iconWidths[1]);
       });
 
@@ -943,12 +928,7 @@ describe('RequestsListMixin', function() {
       });
 
       it('Icon width is ' + iconWidths[2], () => {
-        let style;
-        if (window.ShadyCSS) {
-          style = window.ShadyCSS.getComputedStyleValue(element, iconWidthProperty);
-        } else {
-          style = getComputedStyle(element).getPropertyValue(iconWidthProperty);
-        }
+        const style = getComputedStyle(element).getPropertyValue(iconWidthProperty);
         assert.equal(style, iconWidths[2]);
       });
 
