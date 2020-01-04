@@ -136,3 +136,22 @@
  [1a0e9d6](https://github.com/advanced-rest-client/requests-list-mixin/commit/1a0e9d66ae761c3367773a5d0fe05082361b8e34) by Pawel Psztyc
 
 
+<a name="3.0.1"></a>
+## [3.0.1](https://github.com/advanced-rest-client/requests-list-mixin/compare/3.0.0...3.0.1) (2020-01-02)
+
+### Build
+
+* bumping version [0cea29d](https://github.com/advanced-rest-client/requests-list-mixin/commit/0cea29d71e5c4050b5dafcf2f459d7247af6fbd6) by Pawel
+
+
+### Update
+
+* [ci skip] automated merge master->stage. syncing main branches [74545be](https://github.com/advanced-rest-client/requests-list-mixin/commit/74545be5389d755d36a06623f11f5941cfaf7c5f) by Ci agent
+
+
+### Bug Fixes
+
+* remocing ShadyCss [caf2ea7](https://github.com/advanced-rest-client/requests-list-mixin/commit/caf2ea7e6374affff2fdd6ed2c045c3f0546159c) by Pawel
+* fixing styles for anypoint components [61d5dc5](https://github.com/advanced-rest-client/requests-list-mixin/commit/61d5dc5e62cf2338ebc18838d767fef9e66fda35) by Pawel
+
+
